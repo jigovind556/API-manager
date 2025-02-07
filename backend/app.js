@@ -18,9 +18,11 @@ app.use(cookieParser());
 
 // import routes
 const userRouter = require('./routes/user.routes.js');
+const apiRouter = require('./routes/api.routes.js');
 
 // routes declaration
 app.use("/api/users", userRouter);
+app.use("/api/apis", apiRouter);
 
 
 // 404 Error Handler
