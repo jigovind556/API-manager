@@ -15,13 +15,13 @@ const Layout = ({ children }) => {
     <div className={styles.layout}>
       {/* Sidebar Navigation */}
       <nav className={styles.sidebar}>
-        <h2>Dashboard</h2>
+        <h2 className={styles.title}>Dashboard</h2>
         <ul>
-          <li>
+          <li className={styles.navbox}>
             <a href="/create">Create</a>
           </li>
-          <li>
-            <a href="/search">Search</a>
+          <li  className={styles.navbox}>
+            <a  href="/search">Search</a>
           </li>
           <li>
             <button className={styles.logoutBtn} onClick={logout}>

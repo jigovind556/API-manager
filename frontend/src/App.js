@@ -21,7 +21,7 @@ function App() {
             path="/"
             element={
               <Layout>
-                <h2>Welcome to the Dashboard</h2>
+                <h2 className="title">Welcome to the Dashboard</h2>
               </Layout>
             }
           />

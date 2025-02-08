@@ -1,44 +1,118 @@
-.container {
+.loginSection {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  
+  background-color: #F5F5F5;
+}
+
+.loginContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+
+
+.loginBox {
+  width: 350px;
   max-width: 400px;
-  margin: auto;
-  padding: 20px;
+  background: #2C3930;
+  border-radius: 8px;
+  padding: 25px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
   text-align: center;
 }
 
-.form {
-  display: flex;
-  flex-direction: column;
+.loginContent {
+  text-align: center;
 }
 
-input {
-  padding: 10px;
-  margin: 10px 0;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-}
-
-button {
-  background-color: #007bff;
+.loginTitle {
+  font-size: 22px;
   color: white;
+  font-weight: 300;
+  margin-bottom: 20px;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+  text-align: left;
+}
+
+.formLabel {
+  font-size: 14px;
+  color: white;
+  margin-bottom: 5px;
+  display: block;
+}
+
+.formInput {
+  width: 100%;
   padding: 10px;
-  border: none;
-  border-radius: 5px;
+  border: 1px solid #F5F5F5;
+  border-radius: 6px;
+  background-color: #F5F5F5;
+  color: black;
+}
+
+.passwordWrapper {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #ccc;
   cursor: pointer;
+  font-size: 20px;
 }
 
-button:hover {
-  background-color: #0056b3;
-}
-
-p {
+.registerLink {
+  text-align: center;
   margin-top: 10px;
+  font-size: 14px;
 }
 
-a {
-  color: #007bff;
+.registerText {
+  color: #7886C7;
   text-decoration: none;
+  font-weight: bold;
+  margin-left: 4px;
+}
+.registerTitle {
+  color: white;
+  text-decoration: none;
+  font-weight: bold;
+  margin-left: 4px;
 }
 
-a:hover {
-  text-decoration: underline;
+
+
+.formAction {
+  text-align: center;
+  margin-top: 15px;
+}
+
+.loginButton {
+  width: 100%;
+  padding: 10px;
+  background: linear-gradient(to right, #A9C46C, #bdd38a);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0px 4px 8px rgba(0, 255, 42, 0.874);
+  transition: all 0.3s ease-in-out;
+}
+
+.loginButton:hover {
+  background: linear-gradient(to right, #5D8736, #77a749);
+  box-shadow: 0px 4px 12px rgba(2, 44, 4, 0.7);
 }
