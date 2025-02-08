@@ -90,12 +90,15 @@ export const UserProvider = ({ children }) => {
   // Logout User
   const logout = async () => {
     try {
+      setLoading(true);
       await axios.post("/api/users/logout", {}, { withCredentials: true });
       setUser(null);
       localStorage.removeItem("user"); 
       navigate("/login");
     } catch (error) {
       console.error("Logout failed:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
