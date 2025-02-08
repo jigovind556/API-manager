@@ -30,6 +30,21 @@ const createApi = asyncHandler(async (req, res) => {
     !response ||
     !createdBy
   ) {
+    // check which field is missing
+    for (const field of [
+      "applicationName",
+      "source",
+      "destination",
+      "portNo",
+      "appUrl",
+      "dnsName",
+      "request",
+      "response",
+    ]) {
+      if (!req.body[field]) {
+        throw new ApiError(400, `${field} is required`);
+      }
+    }
     throw new ApiError(400, "All required fields must be provided");
   }
 
