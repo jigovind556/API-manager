@@ -94,7 +94,11 @@ const loginUser = asyncHandler(async (req, res) => {
                 user: loggedUser, accessToken, refreshToken
             }, 'Logged in successfully')
         )
+});
 
+const checkUser = asyncHandler(async (req, res) => {
+    const user  = req.user;
+    res.status(200).json(new ApiResponse(200, {user}, "User data fetched successfully"));
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
@@ -158,4 +162,4 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
 
 
-module.exports = { registerUser, loginUser, logoutUser, refreshAccessToken};
+module.exports = { registerUser, loginUser,checkUser, logoutUser, refreshAccessToken};
