@@ -1,3 +1,4 @@
+// createPage.js
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -18,7 +19,7 @@ const CreatePage = () => {
     dnsName: "",
     request: "",
     response: "",
-    attachment: "",
+    attachment: null,
   });
 
   const [loading, setLoading] = useState(false);
@@ -42,21 +43,39 @@ const CreatePage = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post(
-        "/api/apis",
-        formData,
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true,
-        }
-      );
+      const formDataToSend = new FormData();
+      Object.keys(formData).forEach((key) => {
+        formDataToSend.append(key, formData[key]);
+      });
+
+      const response = await axios.post("/api/apis", formDataToSend, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+        withCredentials: true,
+      });
 
       alert("API Created Successfully!");
       navigate("/");
     } catch (err) {
-      setError(err.response?.data?.message || "Failed to create API");
+      let errorMessage = "Failed to create API";
+
+      if (err.response) {
+        // Try to extract JSON error message
+        if (err.response.data && typeof err.response.data === "object") {
+          errorMessage = err.response.data.message || errorMessage;
+        }
+        // Handle HTML error response
+        else if (typeof err.response.data === "string") {
+          const matches = err.response.data.match(/Error:\s([^<]+)/);
+          if (matches && matches[1]) {
+            errorMessage = matches[1].trim();
+          }
+        }
+      }
+      console.log(err);
+      console.log(errorMessage);
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -153,7 +172,13 @@ const CreatePage = () => {
           required
         ></textarea>
 
-        <input type="text" name="attachment" placeholder="Atachment" onChange={handleChange} />
+        <input
+          type="file"
+          name="attachment"
+          accept="application/pdf" // Restricts file selection to PDFs
+          placeholder="Attachment"
+          onChange={handleFileChange}
+        />
 
         <button type="submit" disabled={loading}>
           {loading ? "Creating..." : "Create API"}

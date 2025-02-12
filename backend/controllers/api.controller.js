@@ -15,8 +15,9 @@ const createApi = asyncHandler(async (req, res) => {
     dnsName,
     request,
     response,
-    attachment,
+    // attachment,
   } = req.body;
+  const attachment = req.file ? req.file.path : null;
   const createdBy = req.user._id;
 
   if (
