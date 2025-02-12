@@ -6,6 +6,7 @@ import CreatePage from "./pages/CreatePage";
 import SearchPage from "./pages/SearchPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
+import EditPage from "./pages/EditPage";
 
 function App() {
   return (
@@ -38,6 +39,14 @@ function App() {
             element={
               <Layout>
                 <SearchPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/edit/:id"
+            element={
+              <Layout>
+                <EditPage />
               </Layout>
             }
           />

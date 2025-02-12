@@ -19,7 +19,7 @@ router
 router
   .route("/:id")
   .get(verifyJWT, getApiById)
-  .put(verifyJWT, updateApi)
+  .put(verifyJWT, upload.single("attachment"), updateApi)
   .delete(verifyJWT, deleteApi);
 
 module.exports = router;

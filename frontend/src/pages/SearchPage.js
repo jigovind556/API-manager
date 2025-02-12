@@ -1,8 +1,13 @@
+// SearchPage.js
 import { useEffect, useState } from "react";
 import axios from "axios";
-import styles from "../styles/SearchPage.module.css"; // Importing module CSS
+import styles from "../styles/SearchPage.module.css";
+import { FaSearch } from "react-icons/fa";
+import DataRow from "../components/DataRow";
+import { useNavigate } from "react-router-dom";
 
 const SearchPage = () => {
+  const navigate = useNavigate();
   const [apis, setApis] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
@@ -14,6 +19,7 @@ const SearchPage = () => {
         const response = await axios.get("/api/apis", {
           withCredentials: true,
         });
+        console.log(response.data.data);
         setApis(response.data.data);
       } catch (err) {
         setError(err.response?.data?.message || "Failed to fetch APIs");
@@ -24,7 +30,20 @@ const SearchPage = () => {
     fetchApis();
   }, []);
 
-  // Filter APIs based on search query
+  const handleEdit = (api) => {
+    console.log("Edit API:", api);
+    navigate(`/edit/${api._id}`);
+  };
+
+  const handleDelete = async (id) => {
+    try {
+      await axios.delete(`/api/apis/${id}`, { withCredentials: true });
+      setApis((prevApis) => prevApis.filter((api) => api._id !== id));
+    } catch (err) {
+      console.error("Error deleting API:", err);
+    }
+  };
+
   const filteredApis = apis.filter((api) =>
     api.applicationName.toLowerCase().includes(searchQuery.toLowerCase())
   );
@@ -32,48 +51,51 @@ const SearchPage = () => {
   return (
     <div className={styles.container}>
       <h2>Search APIs</h2>
+      <div className={styles.searchBox}>
+        <input
+          type="text"
+          placeholder="Search by Application Name..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className={styles.searchInput}
+        />
+        <button className={styles.searchButton}>
+          <FaSearch />
+        </button>
+      </div>
 
-      {/* Search Input */}
-      <input
-        type="text"
-        placeholder="Search by Application Name..."
-        value={searchQuery}
-        onChange={(e) => setSearchQuery(e.target.value)}
-        className={styles.searchInput}
-      />
-
-      {/* Loading & Error Handling */}
       {loading && <p>Loading...</p>}
       {error && <p className={styles.error}>{error}</p>}
 
-      {/* Display APIs */}
-      <div className={styles.apiList}>
-        {filteredApis.length > 0 ? (
-          filteredApis.map((api) => (
-            <div key={api._id} className={styles.apiCard}>
-              <h3>{api.applicationName}</h3>
-              <p>
-                <strong>Source:</strong> {api.source}
-              </p>
-              <p>
-                <strong>Destination:</strong> {api.destination}
-              </p>
-              <p>
-                <strong>Created By:</strong> {api.createdBy?.name} (@
-                {api.createdBy?.username})
-              </p>
-              <p>
-                <strong>URL:</strong>{" "}
-                <a href={api.appUrl} target="_blank" rel="noopener noreferrer">
-                  {api.appUrl}
-                </a>
-              </p>
-            </div>
-          ))
-        ) : (
-          <p>No APIs found</p>
-        )}
-      </div>
+      <table className={styles.apiTable}>
+        <thead>
+          <tr>
+            <th>Application Name</th>
+            <th>Source</th>
+            <th>Destination</th>
+            <th>Created By</th>
+            <th>Updated By</th>
+            <th>URL</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredApis.length > 0 ? (
+            filteredApis.map((api) => (
+              <DataRow
+                key={api._id}
+                api={api}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            ))
+          ) : (
+            <tr>
+              <td colSpan="6">No APIs found</td>
+            </tr>
+          )}
+        </tbody>
+      </table>
     </div>
   );
 };

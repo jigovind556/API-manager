@@ -51,6 +51,7 @@ button {
 button:hover {
   background: linear-gradient(to right, #5D8736, #77a749);
   box-shadow: 0px 4px 12px rgba(2, 44, 4, 0.7);
+  color: white;
 }
 
 button:disabled {
