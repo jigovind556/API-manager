@@ -7,6 +7,8 @@ import SearchPage from "./pages/SearchPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import EditPage from "./pages/EditPage";
+import CreateApplication from "./pages/CreateApplication";
+import ApplicationsList from "./pages/ApplicationsList";
 
 function App() {
   return (
@@ -31,6 +33,22 @@ function App() {
             element={
               <Layout>
                 <CreatePage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/create-application"
+            element={
+              <Layout>
+                <CreateApplication />
+              </Layout>
+            }
+          />
+          <Route
+            path="/applications"
+            element={
+              <Layout>
+                <ApplicationsList/>
               </Layout>
             }
           />

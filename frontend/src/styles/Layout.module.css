@@ -21,7 +21,7 @@
 }
 
 .sidebar ul li {
-  margin: 15px 0;
+  /* margin: 15px 0; */
 }
 
 .title {
@@ -31,7 +31,7 @@
   margin-bottom: 20px;
 }
 
-.sidebar ul li a {
+.sidebar ul a {
   color: white;
   text-decoration: none;
   font-size: 18px;

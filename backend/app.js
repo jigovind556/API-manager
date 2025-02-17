@@ -19,13 +19,21 @@ app.use(cookieParser());
 // import routes
 const userRouter = require('./routes/user.routes.js');
 const apiRouter = require('./routes/api.routes.js');
+const appOptionsRouter = require("./routes/appoptions.routes.js");
+const applicationRouter = require("./routes/application.routes");
+
 
 // routes declaration
 app.use("/api/users", userRouter);
 app.use("/api/apis", apiRouter);
+app.use("/api/applicationOptions", appOptionsRouter);
+app.use("/api/applications", applicationRouter);
 
 
 // 404 Error Handler
+app.use((req, res, next) => {
+  res.status(404).json({ message: "Route not found" });
+});
 
 
 module.exports = { app };

@@ -20,8 +20,14 @@ const Layout = ({ children }) => {
           <li className={styles.navbox}>
             <a href="/create">Create</a>
           </li>
-          <li  className={styles.navbox}>
-            <a  href="/search">Search</a>
+          <li className={styles.navbox}>
+            <a href="/create-application">Create Application</a>
+          </li>
+          <li className={styles.navbox}>
+            <a href="/search">Search</a>
+          </li>
+          <li className={styles.navbox}>
+            <a href="/applications">Application</a>
           </li>
           <li>
             <button className={styles.logoutBtn} onClick={logout}>
