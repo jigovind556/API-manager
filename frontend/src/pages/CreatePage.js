@@ -6,10 +6,16 @@ import styles from "../styles/Create.module.css";
 
 const CreatePage = () => {
   const navigate = useNavigate();
-
+  const envOptions = [
+    {name: "Dev",val:"dev"},
+    {name: "QA",val:"qa"},
+    {name: "PreProd",val:"preprod"},
+    {name: "Prod",val:"prod"},
+    ];
   // State for form fields
   const [formData, setFormData] = useState({
     applicationName: "",
+    environment:"",
     source: "",
     destination: "",
     portNo: "",
@@ -96,6 +102,17 @@ const CreatePage = () => {
           onChange={handleChange}
           required
         />
+        <select 
+          name="environment"
+          value={formData.environment}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Environment</option>
+          {envOptions.map((env) => (
+            <option key={env.val} value={env.val}>{env.name}</option>
+          ))}
+        </select>
 
         <input
           type="text"

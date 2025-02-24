@@ -7,6 +7,11 @@ const apiSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
+    environment: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     source: {
       type: String,
       required: true,

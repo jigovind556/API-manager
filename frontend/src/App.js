@@ -29,7 +29,7 @@ function App() {
             }
           />
           <Route
-            path="/create"
+            path="/create-api"
             element={
               <Layout>
                 <CreatePage />
@@ -45,15 +45,15 @@ function App() {
             }
           />
           <Route
-            path="/applications"
+            path="/applications-search"
             element={
               <Layout>
-                <ApplicationsList/>
+                <ApplicationsList />
               </Layout>
             }
           />
           <Route
-            path="/search"
+            path="/search-api"
             element={
               <Layout>
                 <SearchPage />

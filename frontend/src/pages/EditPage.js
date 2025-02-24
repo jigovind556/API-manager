@@ -8,9 +8,16 @@ import styles from "../styles/Create.module.css";
 const EditPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const envOptions = [
+    { name: "Dev", val: "dev" },
+    { name: "QA", val: "qa" },
+    { name: "PreProd", val: "preprod" },
+    { name: "Prod", val: "prod" },
+  ];
 
   const [formData, setFormData] = useState({
     applicationName: "",
+    environment:"",
     source: "",
     destination: "",
     portNo: "",
@@ -35,6 +42,7 @@ const EditPage = () => {
         const data = response.data.data;
         setFormData((prevFormData) => ({
           applicationName: data.applicationName || "",
+          environment : data.environment || "",
           source: data.source || "",
           destination: data.destination || "",
           portNo: data.portNo || "",
@@ -103,6 +111,21 @@ const EditPage = () => {
           onChange={handleChange}
           required
         />
+        
+        <select
+          name="environment"
+          value={formData.environment}
+          onChange={handleChange}
+          required
+        >
+          <option value="">Select Environment</option>
+          {envOptions.map((env) => (
+            <option key={env.val} value={env.val}>
+              {env.name}
+            </option>
+          ))}
+        </select>
+
         <input
           type="text"
           name="source"

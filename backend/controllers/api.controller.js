@@ -7,6 +7,7 @@ const { asyncHandler } = require("../utils/asyncHandler");
 const createApi = asyncHandler(async (req, res) => {
   const {
     applicationName,
+    environment,
     source,
     destination,
     portNo,
@@ -23,6 +24,7 @@ const createApi = asyncHandler(async (req, res) => {
 
   if (
     !applicationName ||
+    !environment ||
     !source ||
     !destination ||
     !portNo ||
@@ -35,6 +37,7 @@ const createApi = asyncHandler(async (req, res) => {
     // check which field is missing
     for (const field of [
       "applicationName",
+      "environment",
       "source",
       "destination",
       "portNo",
@@ -57,6 +60,7 @@ const createApi = asyncHandler(async (req, res) => {
 
   const api = await API.create({
     applicationName,
+    environment,
     source,
     destination,
     portNo,

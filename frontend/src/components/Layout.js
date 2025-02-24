@@ -18,16 +18,16 @@ const Layout = ({ children }) => {
         <h2 className={styles.title}>Dashboard</h2>
         <ul>
           <li className={styles.navbox}>
-            <a href="/create">Create</a>
+            <a href="/create-api">Create API</a>
           </li>
           <li className={styles.navbox}>
             <a href="/create-application">Create Application</a>
           </li>
           <li className={styles.navbox}>
-            <a href="/search">Search</a>
+            <a href="/search-api">Search API</a>
           </li>
           <li className={styles.navbox}>
-            <a href="/applications">Application</a>
+            <a href="/applications-search">Application Search</a>
           </li>
           <li>
             <button className={styles.logoutBtn} onClick={logout}>
