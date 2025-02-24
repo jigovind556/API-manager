@@ -80,7 +80,8 @@ const createApi = asyncHandler(async (req, res) => {
 const getAllApis = asyncHandler(async (req, res) => {
   const apis = await API.find()
     .populate("createdBy", "_id name username")
-    .populate("updatedBy", "_id name username"); 
+    .populate("updatedBy", "_id name username")
+    .sort({ createdAt: -1 }); 
 
   res
     .status(200)

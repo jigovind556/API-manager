@@ -72,6 +72,7 @@ const SearchPage = () => {
           <tr>
             <th>#</th>
             <th>Application Name</th>
+            <th>Environment</th>
             <th>Source</th>
             <th>Destination</th>
             <th>Created By</th>
@@ -93,7 +94,7 @@ const SearchPage = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="8">No APIs found</td>
+              <td colSpan="9">No APIs found</td>
             </tr>
           )}
         </tbody>

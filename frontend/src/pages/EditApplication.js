@@ -72,15 +72,10 @@ const EditApplication = () => {
       if (formData.appName === "") {
         throw new Error("Please enter an app name");
       }
-      await axios.post("/api/applications", formData, {
+      await axios.put(`/api/applications/${id}`, formData, {
         withCredentials: true,
       });
 
-      setFormData({
-        applicationName: "",
-        appName: "",
-        applicationDescription: "",
-      });
       alert("Application updated Successfully!");
       navigate("/applications-search");
     } catch (err) {

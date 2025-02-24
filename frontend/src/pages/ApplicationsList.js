@@ -73,7 +73,7 @@ const ApplicationsList = () => {
             <th>App Name</th>
             <th>Description</th>
             <th>Created By</th>
-            <th>Created At</th>
+            <th>Updated By</th>
             <th>Actions</th>
           </tr>
         </thead>

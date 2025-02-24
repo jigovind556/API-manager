@@ -39,7 +39,9 @@ const ApplicationDataRow = ({ api, index, onStatusChange }) => {
           `${api.createdBy?.name} @${api.createdBy?.username}`) ||
           "Unknown"}
       </td>
-      <td>{new Date(api.createdAt).toLocaleDateString()}</td>
+      <td>
+        {api.updatedBy && `${api.updatedBy?.name} @${api.updatedBy?.username})`}
+      </td>
       <td className={styles.actionButtons}>
         <button
           className={styles.editButton}

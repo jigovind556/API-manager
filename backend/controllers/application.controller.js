@@ -33,6 +33,7 @@ const createApplication = asyncHandler(async (req, res) => {
 const getAllApplications = asyncHandler(async (req, res) => {
   const applications = await Application.find()
     .populate("createdBy", "_id name username")
+    .populate("updatedBy", "_id name username")
     .sort({ createdAt: -1 });
 
   res

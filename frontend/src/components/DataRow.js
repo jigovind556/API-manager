@@ -12,6 +12,7 @@ const DataRow = ({ api,index="", onEdit, onDelete }) => {
     <tr>
       <td>{index}</td>
       <td>{api.applicationName}</td>
+      <td>{api.environment}</td>
       <td>{api.source}</td>
       <td>{api.destination}</td>
       <td>
