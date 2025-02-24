@@ -70,6 +70,7 @@ const SearchPage = () => {
       <table className={styles.apiTable}>
         <thead>
           <tr>
+            <th>#</th>
             <th>Application Name</th>
             <th>Source</th>
             <th>Destination</th>
@@ -81,9 +82,10 @@ const SearchPage = () => {
         </thead>
         <tbody>
           {filteredApis.length > 0 ? (
-            filteredApis.map((api) => (
+            filteredApis.map((api,index) => (
               <DataRow
                 key={api._id}
+                index={index+1}
                 api={api}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
@@ -91,7 +93,7 @@ const SearchPage = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="6">No APIs found</td>
+              <td colSpan="8">No APIs found</td>
             </tr>
           )}
         </tbody>

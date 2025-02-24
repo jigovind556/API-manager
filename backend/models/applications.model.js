@@ -13,11 +13,19 @@ const applicationSchema = new mongoose.Schema(
     applicationDescription: {
       type: String,
     },
+    enabled: {
+      type: Boolean,
+      default: true,
+    },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
+    updatedBy: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
   },
   { timestamps: true }
 );

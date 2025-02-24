@@ -4,6 +4,7 @@ const {
   getAllApplications,
   getApplicationById,
   deleteApplication,
+  updateApplication,
 } = require("../controllers/application.controller");
 const { verifyJWT } = require("../middlewares/auth.middleware");
 
@@ -17,6 +18,7 @@ router
 router
   .route("/:id")
   .get(verifyJWT, getApplicationById)
+  .put(verifyJWT, updateApplication)
   .delete(verifyJWT, deleteApplication);
 
 module.exports = router;

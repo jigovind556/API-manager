@@ -2,7 +2,7 @@
 import styles from "../styles/SearchPage.module.css";
 import { FaEdit, FaTrash } from "react-icons/fa";
 
-const DataRow = ({ api, onEdit, onDelete }) => {
+const DataRow = ({ api,index="", onEdit, onDelete }) => {
     const handleDeleteClick = () => {
       if (window.confirm("Are you sure you want to delete this API?")) {
         onDelete(api._id);
@@ -10,6 +10,7 @@ const DataRow = ({ api, onEdit, onDelete }) => {
     };
   return (
     <tr>
+      <td>{index}</td>
       <td>{api.applicationName}</td>
       <td>{api.source}</td>
       <td>{api.destination}</td>

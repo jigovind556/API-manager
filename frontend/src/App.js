@@ -9,6 +9,7 @@ import RegisterPage from "./pages/RegisterPage";
 import EditPage from "./pages/EditPage";
 import CreateApplication from "./pages/CreateApplication";
 import ApplicationsList from "./pages/ApplicationsList";
+import EditApplication from "./pages/EditApplication";
 
 function App() {
   return (
@@ -65,6 +66,14 @@ function App() {
             element={
               <Layout>
                 <EditPage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/edit-application/:id"
+            element={
+              <Layout>
+                <EditApplication />
               </Layout>
             }
           />

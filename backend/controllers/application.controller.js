@@ -1,4 +1,3 @@
-
 const { ApiResponse } = require("../utils/ApiResponse");
 const { ApiError } = require("../utils/ApiError");
 const { asyncHandler } = require("../utils/asyncHandler");
@@ -10,8 +9,8 @@ const createApplication = asyncHandler(async (req, res) => {
   const createdBy = req.user._id;
 
   if (!applicationName || !appName) {
-    console.log('applicationName', applicationName);
-    console.log('appName', appName);
+    console.log("applicationName", applicationName);
+    console.log("appName", appName);
     throw new ApiError(400, "Application Name and App Name are required");
   }
 
@@ -20,6 +19,7 @@ const createApplication = asyncHandler(async (req, res) => {
     appName,
     applicationDescription,
     createdBy,
+    enabled: true,
   });
 
   res
@@ -61,6 +61,28 @@ const getApplicationById = asyncHandler(async (req, res) => {
     );
 });
 
+const updateApplication = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const updates = req.body;
+  const updatedBy = req.user._id;
+
+  const application = await Application.findByIdAndUpdate(
+    id,
+    { ...updates, updatedBy },
+    { new: true }
+  );
+
+  if (!application) {
+    throw new ApiError(404, "Application not found");
+  }
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, application, "Application updated successfully")
+    );
+});
+
 // Delete Application
 const deleteApplication = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -79,5 +101,6 @@ module.exports = {
   createApplication,
   getAllApplications,
   getApplicationById,
+  updateApplication,
   deleteApplication,
 };
