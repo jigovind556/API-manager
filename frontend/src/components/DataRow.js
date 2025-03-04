@@ -13,13 +13,13 @@ const DataRow = ({ api,index="", onEdit, onDelete }) => {
       <td>{index}</td>
       <td>{api.applicationName}</td>
       <td>{api.environment}</td>
-      <td>{api.source}</td>
-      <td>{api.destination}</td>
+      <td>{api.sourceDestinationPorts?.source || api.source}</td>
+      <td>{api.sourceDestinationPorts?.destination || api.destination}</td>
       <td>
         {api.createdBy?.name} (@{api.createdBy?.username})
       </td>
       <td>
-        {api.updatedBy&&`${api.updatedBy?.name} @${api.updatedBy?.username})`}
+        {api.updatedBy && `${api.updatedBy?.name} @${api.updatedBy?.username})`}
       </td>
       <td>
         <a href={api.appUrl} target="_blank" rel="noopener noreferrer">

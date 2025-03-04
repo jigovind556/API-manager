@@ -12,19 +12,23 @@ const apiSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    source: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    destination: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    portNo: {
-      type: Number,
-      required: true,
+    // source: {
+    //   type: String,
+    //   required: true,
+    //   trim: true,
+    // },
+    // destination: {
+    //   type: String,
+    //   required: true,
+    //   trim: true,
+    // },
+    // portNo: {
+    //   type: Number,
+    //   required: true,
+    // },
+    sourceDestinationPorts: {
+      type: Object,
+      required : true,
     },
     appUrl: {
       type: String,

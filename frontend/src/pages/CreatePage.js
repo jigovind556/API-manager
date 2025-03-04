@@ -7,15 +7,15 @@ import styles from "../styles/Create.module.css";
 const CreatePage = () => {
   const navigate = useNavigate();
   const envOptions = [
-    {name: "Dev",val:"dev"},
-    {name: "QA",val:"qa"},
-    {name: "PreProd",val:"preprod"},
-    {name: "Prod",val:"prod"},
-    ];
+    { name: "Dev", val: "dev" },
+    { name: "QA", val: "qa" },
+    { name: "PreProd", val: "preprod" },
+    { name: "Prod", val: "prod" },
+  ];
   // State for form fields
   const [formData, setFormData] = useState({
     applicationName: "",
-    environment:"",
+    environment: "",
     source: "",
     destination: "",
     portNo: "",
@@ -53,7 +53,18 @@ const CreatePage = () => {
       Object.keys(formData).forEach((key) => {
         formDataToSend.append(key, formData[key]);
       });
+      // Add source, destination, and portNo as separate fields
+      formDataToSend.append("sourceDestinationPorts[source]", formData.source);
+      formDataToSend.append(
+        "sourceDestinationPorts[destination]",
+        formData.destination
+      );
+      formDataToSend.append("sourceDestinationPorts[portNo]", formData.portNo);
 
+      // Remove source, destination, and portNo from formDataToSend
+      formDataToSend.delete("source");
+      formDataToSend.delete("destination");
+      formDataToSend.delete("portNo");
       const response = await axios.post("/api/apis", formDataToSend, {
         headers: {
           "Content-Type": "multipart/form-data",
@@ -87,7 +98,6 @@ const CreatePage = () => {
     }
   };
 
-
   return (
     <div className={styles.container}>
       <h2>Create API</h2>
@@ -102,7 +112,7 @@ const CreatePage = () => {
           onChange={handleChange}
           required
         />
-        <select 
+        <select
           name="environment"
           value={formData.environment}
           onChange={handleChange}
@@ -110,7 +120,9 @@ const CreatePage = () => {
         >
           <option value="">Select Environment</option>
           {envOptions.map((env) => (
-            <option key={env.val} value={env.val}>{env.name}</option>
+            <option key={env.val} value={env.val}>
+              {env.name}
+            </option>
           ))}
         </select>
 

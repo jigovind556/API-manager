@@ -8,9 +8,10 @@ const createApi = asyncHandler(async (req, res) => {
   const {
     applicationName,
     environment,
-    source,
-    destination,
-    portNo,
+    // source,
+    // destination,
+    // portNo,
+    sourceDestinationPorts,
     appUrl,
     apiDescription,
     applicationDescription,
@@ -25,9 +26,10 @@ const createApi = asyncHandler(async (req, res) => {
   if (
     !applicationName ||
     !environment ||
-    !source ||
-    !destination ||
-    !portNo ||
+    // !source ||
+    // !destination ||
+    // !portNo ||
+    !sourceDestinationPorts ||
     !appUrl ||
     !dnsName ||
     !request ||
@@ -38,9 +40,10 @@ const createApi = asyncHandler(async (req, res) => {
     for (const field of [
       "applicationName",
       "environment",
-      "source",
-      "destination",
-      "portNo",
+      // "source",
+      // "destination",
+      // "portNo",
+      "sourceDestinationPorts",
       "appUrl",
       "dnsName",
       "request",
@@ -61,9 +64,11 @@ const createApi = asyncHandler(async (req, res) => {
   const api = await API.create({
     applicationName,
     environment,
-    source,
-    destination,
-    portNo,
+    // source,
+    // destination,
+    // portNo,
+    // JSON.parse(sourceDestinationPorts),
+    sourceDestinationPorts,
     appUrl,
     apiDescription,
     applicationDescription,
