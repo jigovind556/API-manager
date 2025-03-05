@@ -1,9 +1,7 @@
-//EditPage.js
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import styles from "../styles/Create.module.css";
-
 
 const EditPage = () => {
   const { id } = useParams();
@@ -17,14 +15,9 @@ const EditPage = () => {
 
   const [formData, setFormData] = useState({
     applicationName: "",
-    environment:"",
-    source: "",
-    destination: "",
-    portNo: "",
-    appUrl: "",
+    endpoints: [],
     apiDescription: "",
     applicationDescription: "",
-    dnsName: "",
     request: "",
     response: "",
     attachment: null,
@@ -40,35 +33,63 @@ const EditPage = () => {
           withCredentials: true,
         });
         const data = response.data.data;
-        setFormData((prevFormData) => ({
+
+        setFormData({
           applicationName: data.applicationName || "",
-          environment : data.environment || "",
-          source: data.source || "",
-          destination: data.destination || "",
-          portNo: data.portNo || "",
-          appUrl: data.appUrl || "",
+          endpoints: data.endpoints || [
+            {
+              environment: "",
+              source: "",
+              destination: "",
+              portNo: "",
+              appUrl: "",
+              dnsName: "",
+            },
+          ],
           apiDescription: data.apiDescription || "",
           applicationDescription: data.applicationDescription || "",
-          dnsName: data.dnsName || "",
           request: JSON.stringify(data.request || ""),
           response: JSON.stringify(data.response || ""),
-          attachment: null, // Reset attachment to null for new uploads
-        }));
-
+          attachment: null,
+        });
       } catch (err) {
         setError("Failed to fetch API details");
       }
     };
+
     fetchApiData();
   }, [id]);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+  const handleChange = (e, index, field) => {
+    const updatedEndpoints = [...formData.endpoints];
+    updatedEndpoints[index][field] = e.target.value;
+    setFormData({ ...formData, endpoints: updatedEndpoints });
   };
 
   const handleFileChange = (e) => {
     setFormData({ ...formData, attachment: e.target.files[0] });
+  };
+
+  const addEndpoint = () => {
+    setFormData({
+      ...formData,
+      endpoints: [
+        ...formData.endpoints,
+        {
+          environment: "",
+          source: "",
+          destination: "",
+          portNo: "",
+          appUrl: "",
+          dnsName: "",
+        },
+      ],
+    });
+  };
+
+  const removeEndpoint = (index) => {
+    const updatedEndpoints = formData.endpoints.filter((_, i) => i !== index);
+    setFormData({ ...formData, endpoints: updatedEndpoints });
   };
 
   const handleSubmit = async (e) => {
@@ -79,13 +100,22 @@ const EditPage = () => {
     try {
       const formDataToSend = new FormData();
       Object.keys(formData).forEach((key) => {
-        formDataToSend.append(key, formData[key]);
+        if (key !== "endpoints") {
+          formDataToSend.append(key, formData[key]);
+        }
+      });
+
+      formData.endpoints.forEach((endpoint, index) => {
+        Object.keys(endpoint).forEach((field) => {
+          formDataToSend.append(
+            `endpoints[${index}][${field}]`,
+            endpoint[field]
+          );
+        });
       });
 
       await axios.put(`/api/apis/${id}`, formDataToSend, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
 
@@ -108,96 +138,122 @@ const EditPage = () => {
           name="applicationName"
           placeholder="Application Name"
           value={formData.applicationName}
-          onChange={handleChange}
+          onChange={(e) =>
+            setFormData({ ...formData, applicationName: e.target.value })
+          }
           required
         />
-        
-        <select
-          name="environment"
-          value={formData.environment}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Select Environment</option>
-          {envOptions.map((env) => (
-            <option key={env.val} value={env.val}>
-              {env.name}
-            </option>
-          ))}
-        </select>
 
-        <input
-          type="text"
-          name="source"
-          placeholder="Source"
-          value={formData.source}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          name="destination"
-          placeholder="Destination"
-          value={formData.destination}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="number"
-          name="portNo"
-          placeholder="Port Number"
-          value={formData.portNo}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          name="appUrl"
-          placeholder="App URL"
-          value={formData.appUrl}
-          onChange={handleChange}
-          required
-        />
-        <input
-          type="text"
-          name="dnsName"
-          placeholder="DNS Name"
-          value={formData.dnsName}
-          onChange={handleChange}
-          required
-        />
-        <textarea
-          name="apiDescription"
-          placeholder="API Description"
-          value={formData.apiDescription}
-          onChange={handleChange}
-        ></textarea>
-        <textarea
-          name="applicationDescription"
-          placeholder="Application Description"
-          value={formData.applicationDescription}
-          onChange={handleChange}
-        ></textarea>
-        <textarea
-          name="request"
-          placeholder="Request Data"
-          value={formData.request}
-          onChange={handleChange}
-          required
-        ></textarea>
-        <textarea
-          name="response"
-          placeholder="Response Data"
-          value={formData.response}
-          onChange={handleChange}
-          required
-        ></textarea>
+        {formData.endpoints.map((endpoint, index) => (
+          <div key={index} className={styles.endpointRow}>
+            <select
+              value={endpoint.environment}
+              onChange={(e) => handleChange(e, index, "environment")}
+              required
+            >
+              <option value="">Select Environment</option>
+              {envOptions.map((env) => (
+                <option key={env.val} value={env.val}>
+                  {env.name}
+                </option>
+              ))}
+            </select>
+            <input
+              type="text"
+              placeholder="Source"
+              value={endpoint.source}
+              onChange={(e) => handleChange(e, index, "source")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Destination"
+              value={endpoint.destination}
+              onChange={(e) => handleChange(e, index, "destination")}
+              required
+            />
+            <input
+              type="number"
+              placeholder="Port Number"
+              value={endpoint.portNo}
+              onChange={(e) => handleChange(e, index, "portNo")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="App URL"
+              value={endpoint.appUrl}
+              onChange={(e) => handleChange(e, index, "appUrl")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="DNS Name"
+              value={endpoint.dnsName}
+              onChange={(e) => handleChange(e, index, "dnsName")}
+              required
+            />
+            <button type="button" onClick={() => removeEndpoint(index)}>
+              Remove
+            </button>
+          </div>
+        ))}
+
+        <button type="button" onClick={addEndpoint}>
+          Add Endpoint
+        </button>
+
+        <div className={styles.descRow}>
+          <textarea
+            name="apiDescription"
+            placeholder="API Description"
+            value={formData.apiDescription}
+            onChange={(e) =>
+              setFormData({ ...formData, apiDescription: e.target.value })
+            }
+          ></textarea>
+          <textarea
+            name="applicationDescription"
+            placeholder="Application Description"
+            value={formData.applicationDescription}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                applicationDescription: e.target.value,
+              })
+            }
+          ></textarea>
+        </div>
+
+        <div className={styles.dataRow}>
+          <textarea
+            name="request"
+            placeholder="Request Data"
+            value={formData.request}
+            onChange={(e) =>
+              setFormData({ ...formData, request: e.target.value })
+            }
+            required
+          ></textarea>
+
+          <textarea
+            name="response"
+            placeholder="Response Data"
+            value={formData.response}
+            onChange={(e) =>
+              setFormData({ ...formData, response: e.target.value })
+            }
+            required
+          ></textarea>
+        </div>
+
         <input
           type="file"
           name="attachment"
           accept="application/pdf"
           onChange={handleFileChange}
         />
+
         <button type="submit" disabled={loading}>
           {loading ? "Updating..." : "Update API"}
         </button>

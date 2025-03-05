@@ -12,19 +12,13 @@ const DataRow = ({ api,index="", onEdit, onDelete }) => {
     <tr>
       <td>{index}</td>
       <td>{api.applicationName}</td>
-      <td>{api.environment}</td>
-      <td>{api.sourceDestinationPorts?.source || api.source}</td>
-      <td>{api.sourceDestinationPorts?.destination || api.destination}</td>
+      <td>{api.applicationDescription}</td>
+      <td>{api.apiDescription}</td>
       <td>
         {api.createdBy?.name} (@{api.createdBy?.username})
       </td>
       <td>
         {api.updatedBy && `${api.updatedBy?.name} @${api.updatedBy?.username})`}
-      </td>
-      <td>
-        <a href={api.appUrl} target="_blank" rel="noopener noreferrer">
-          {api.appUrl}
-        </a>
       </td>
       <td className={styles.actionButtons}>
         <button className={styles.editButton} onClick={() => onEdit(api)}>

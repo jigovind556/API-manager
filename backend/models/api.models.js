@@ -1,5 +1,37 @@
 const mongoose = require("mongoose");
 
+const endpointSchema = new mongoose.Schema({
+  environment: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  source: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  destination: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  portNo: {
+    type: Number,
+    required: true,
+  },
+  appUrl: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  dnsName: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+});
+
 const apiSchema = new mongoose.Schema(
   {
     applicationName: {
@@ -7,33 +39,9 @@ const apiSchema = new mongoose.Schema(
       required: true,
       trim: true,
     },
-    environment: {
-      type: String,
+    endpoints: {
+      type: [endpointSchema],
       required: true,
-      trim: true,
-    },
-    // source: {
-    //   type: String,
-    //   required: true,
-    //   trim: true,
-    // },
-    // destination: {
-    //   type: String,
-    //   required: true,
-    //   trim: true,
-    // },
-    // portNo: {
-    //   type: Number,
-    //   required: true,
-    // },
-    sourceDestinationPorts: {
-      type: Object,
-      required : true,
-    },
-    appUrl: {
-      type: String,
-      required: true,
-      trim: true,
     },
     apiDescription: {
       type: String,
@@ -41,11 +49,6 @@ const apiSchema = new mongoose.Schema(
     },
     applicationDescription: {
       type: String,
-      trim: true,
-    },
-    dnsName: {
-      type: String,
-      required: true,
       trim: true,
     },
     request: {

@@ -72,12 +72,10 @@ const SearchPage = () => {
           <tr>
             <th>#</th>
             <th>Application Name</th>
-            <th>Environment</th>
-            <th>Source</th>
-            <th>Destination</th>
+            <th>Application desc</th>
+            <th>Api desc </th>
             <th>Created By</th>
             <th>Updated By</th>
-            <th>URL</th>
             <th>Actions</th>
           </tr>
         </thead>
