@@ -5,6 +5,7 @@ import styles from "../styles/SearchPage.module.css";
 import { FaSearch } from "react-icons/fa";
 import DataRow from "../components/DataRow";
 import { useNavigate } from "react-router-dom";
+import { useMyContext } from "../context/MyContext";
 
 const SearchPage = () => {
   const navigate = useNavigate();
@@ -12,6 +13,32 @@ const SearchPage = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // const [expanded, setExpanded] = useState(false);
+  const {theme, toggleTheme} = useMyContext();
+  // const ExpandMore = styled((props)=>{
+  //   const {expand, ...other} = props;
+  //   return <IconButton {...other}/>;
+  // })(({theme})=>({
+  //   marginLeft: 'auto',
+  //   transition:theme.transitions.create('transform',{
+  //     duration: theme.transitions.duration.shortest,
+  //   }),
+  //   variants: [
+  //     {
+  //       props: ({expand}) => !expand,
+  //       style: {
+  //         transform: 'rotate(0deg)',
+  //       },
+  //     },
+  //     {
+  //       props: ({expand}) => expand,
+  //       style: {
+  //         transform: 'rotate(180deg)',
+  //       },
+  //     }
+  //   ],
+  // }));
 
   useEffect(() => {
     const fetchApis = async () => {
@@ -49,7 +76,7 @@ const SearchPage = () => {
   );
 
   return (
-    <div className={styles.container}>
+    <div className={styles.container} style={{backgroundColor: theme === 'light' ? '#f0f0f0' : '#333', color: theme === 'light' ? '#333' : '#f0f0f0'}}>
       <h2>Search APIs</h2>
       <div className={styles.searchBox}>
         <input

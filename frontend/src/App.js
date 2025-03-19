@@ -10,11 +10,13 @@ import EditPage from "./pages/EditPage";
 import CreateApplication from "./pages/CreateApplication";
 import ApplicationsList from "./pages/ApplicationsList";
 import EditApplication from "./pages/EditApplication";
+import { MyProvider } from "./context/MyContext";
 
 function App() {
   return (
     <Router>
       <UserProvider>
+        <MyProvider   >
         <Routes>
           {/* Authentication Routes */}
           <Route path="/login" element={<LoginPage />} />
@@ -78,6 +80,7 @@ function App() {
             }
           />
         </Routes>
+        </MyProvider>
       </UserProvider>
     </Router>
   );
