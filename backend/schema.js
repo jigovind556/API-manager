@@ -1,5 +1,5 @@
 // schema.js
-const API = require("./models/api.models");
+const {API,API_Log} = require("./models/api.models");
 const User = require("./models/user.models");
 
-module.exports = { User, API };
+module.exports = { User, API, API_Log };

@@ -11,6 +11,7 @@ import CreateApplication from "./pages/CreateApplication";
 import ApplicationsList from "./pages/ApplicationsList";
 import EditApplication from "./pages/EditApplication";
 import { MyProvider } from "./context/MyContext";
+import ApiChangeHistory from "./pages/ApiChangeHistory";
 
 function App() {
   return (
@@ -36,6 +37,14 @@ function App() {
             element={
               <Layout>
                 <CreatePage />
+              </Layout>
+            }
+          />
+          <Route
+            path="/api-update-history/:id"
+            element={
+              <Layout>
+                <ApiChangeHistory />
               </Layout>
             }
           />

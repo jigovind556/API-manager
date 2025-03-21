@@ -1,0 +1,51 @@
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.heading {
+  text-align: center;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.loading, .error, .noHistory {
+  text-align: center;
+  font-size: 16px;
+  font-weight: bold;
+  color: #d9534f;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  background: white;
+}
+
+.table th, .table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+.table th {
+  background-color: #28a745;
+  color: white;
+}
+
+.changesList {
+  list-style-type: none;
+  padding: 0;
+}
+
+.changeItem {
+  background: #f1f1f1;
+  margin: 5px 0;
+  padding: 5px;
+  border-radius: 5px;
+  font-size: 14px;
+}

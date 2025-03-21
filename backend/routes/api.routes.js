@@ -6,6 +6,7 @@ const {
   getApiById,
   updateApi,
   deleteApi,
+  getApiHistory,
 } = require("../controllers/api.controller");
 const { verifyJWT } = require("../middlewares/auth.middleware");
 const upload = require("../middlewares/upload.middleware");
@@ -21,5 +22,7 @@ router
   .get(verifyJWT, getApiById)
   .put(verifyJWT, upload.single("attachment"), updateApi)
   .delete(verifyJWT, deleteApi);
+
+router.route("/:id/history").get(verifyJWT, getApiHistory);
 
 module.exports = router;
