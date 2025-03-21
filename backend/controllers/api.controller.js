@@ -265,9 +265,13 @@ const getApiHistory = asyncHandler(async (req, res) => {
   try {
     const { id } = req.params;
 
-    // Fetch history records for the given API ID, sorted by latest updates
-    const history = await API_Log.find({ apiId: id })
+    // Query condition: If `id` is provided, filter by `apiId`, otherwise fetch all
+    const query = id ? { apiId: id } : {};
+
+    // Fetch history records based on the query, sorted by latest updates
+    const history = await API_Log.find(query)
       .populate("updatedBy", "_id name username")
+      .populate("apiId", "_id applicationName apiDescription")
       .sort({ updatedAt: -1 })
       .lean();
 

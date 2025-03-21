@@ -11,7 +11,7 @@ const ApiChangeHistory = () => {
   useEffect(() => {
     const fetchHistory = async () => {
       try {
-        const response = await fetch(`/api/apis/${id}/history`);
+        const response = await fetch(`/api/apis/history/${id? id : ""}`);
         if (!response.ok) throw new Error(response.message);
 
         const data = await response.json();
@@ -41,6 +41,7 @@ const ApiChangeHistory = () => {
         <table className={styles.table}>
           <thead>
             <tr>
+            <th>Application Name</th>
               <th>Updated By</th>
               <th>Updated At</th>
               <th>Changes</th>
@@ -49,6 +50,7 @@ const ApiChangeHistory = () => {
           <tbody>
             {history.map((entry) => (
               <tr key={entry._id}>
+                <td>{entry.apiId?.applicationName}</td>
                 <td>{entry.updatedBy?.name}</td>
                 <td>{new Date(entry.updatedAt).toLocaleString()}</td>
                 <td>

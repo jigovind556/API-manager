@@ -41,6 +41,14 @@ function App() {
             }
           />
           <Route
+            path="/api-update-history"
+            element={
+              <Layout>
+                <ApiChangeHistory />
+              </Layout>
+            }
+          />
+          <Route
             path="/api-update-history/:id"
             element={
               <Layout>
