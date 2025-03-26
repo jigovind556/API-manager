@@ -29,12 +29,69 @@ const createApplication = asyncHandler(async (req, res) => {
     );
 });
 
-// Get All Applications
 const getAllApplications = asyncHandler(async (req, res) => {
-  const applications = await Application.find()
-    .populate("createdBy", "_id name username")
-    .populate("updatedBy", "_id name username")
-    .sort({ createdAt: -1 });
+  const applications = await Application.aggregate([
+    {
+      $lookup: {
+        from: "users",
+        localField: "createdBy",
+        foreignField: "_id",
+        as: "createdBy",
+      },
+    },
+    {
+      $lookup: {
+        from: "users",
+        localField: "updatedBy",
+        foreignField: "_id",
+        as: "updatedBy",
+      },
+    },
+    {
+      $unwind: { path: "$createdBy", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $unwind: { path: "$updatedBy", preserveNullAndEmptyArrays: true },
+    },
+    {
+      $lookup: {
+        from: "applications",
+        let: {
+          appNameValue: "$appName",
+          applicationNameValue: "$applicationName",
+        },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$appName", "$$appNameValue"] } } },
+          { $count: "count" },
+        ],
+        as: "count_apps",
+      },
+    },
+    {
+      $lookup: {
+        from: "applications",
+        let: { applicationNameValue: "$applicationName" },
+        pipeline: [
+          {
+            $match: {
+              $expr: { $eq: ["$applicationName", "$$applicationNameValue"] },
+            },
+          },
+          { $count: "count" },
+        ],
+        as: "count_applications",
+      },
+    },
+    {
+      $addFields: {
+        count_apps: { $ifNull: [{ $arrayElemAt: ["$count_apps.count", 0] }, 0] },
+        count_applications: {
+          $ifNull: [{ $arrayElemAt: ["$count_applications.count", 0] }, 0],
+        },
+      },
+    },
+    { $sort: { createdAt: -1 } },
+  ]);
 
   res
     .status(200)
