@@ -18,7 +18,8 @@ const DataRow = ({ api, index = "", onEdit, onDelete }) => {
   return (
     <tr>
       <td>{index}</td>
-      <td>{api.applicationName}</td>
+      <td>{api.application?.appName}</td>
+      <td>{api.project?.name}</td>
       <td>{api.applicationDescription}</td>
       <td>{api.apiDescription}</td>
       <td>

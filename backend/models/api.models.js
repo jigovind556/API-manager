@@ -34,10 +34,15 @@ const endpointSchema = new mongoose.Schema({
 
 const apiSchema = new mongoose.Schema(
   {
-    applicationName: {
-      type: String,
+    application: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Application",
       required: true,
-      trim: true,
+    },
+    project: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AppOption",
+      required: true,
     },
     endpoints: {
       type: [endpointSchema],

@@ -6,7 +6,8 @@ const { asyncHandler } = require("../utils/asyncHandler");
 
 const createApi = asyncHandler(async (req, res) => {
   const {
-    applicationName,
+    application,
+    project,
     apiDescription,
     applicationDescription,
     request,
@@ -16,25 +17,16 @@ const createApi = asyncHandler(async (req, res) => {
   const createdBy = req.user._id;
 
   const endpoints = req.body.endpoints;
-  // let index = 0;
-  // while (req.body[`endpoints[${index}][environment]`]) {
-  //   endpoints.push({
-  //     environment: req.body[`endpoints[${index}][environment]`],
-  //     source: req.body[`endpoints[${index}][source]`],
-  //     destination: req.body[`endpoints[${index}][destination]`],
-  //     portNo: req.body[`endpoints[${index}][portNo]`],
-  //     appUrl: req.body[`endpoints[${index}][appUrl]`],
-  //     dnsName: req.body[`endpoints[${index}][dnsName]`],
-  //   });
-  //   index++;
-  // }
 
   if (endpoints.length === 0) {
     throw new ApiError(400, "At least one endpoint must be provided");
   }
-
+  console.log('application', application);
+  console.log('project', project);
+  console.log('request', request);
+  console.log('response', response);
   // Check for missing fields
-  if (!applicationName || !request || !response) {
+  if (!application || !project || !request || !response) {
     throw new ApiError(400, "All required fields must be provided");
   }
 
@@ -57,13 +49,14 @@ const createApi = asyncHandler(async (req, res) => {
       }
     }
 
-  const existingApi = await API.findOne({ applicationName });
-  if (existingApi) {
-    throw new ApiError(409, "API with this URL already exists");
-  }
+  // const existingApi = await API.findOne({ applicationName });
+  // if (existingApi) {
+  //   throw new ApiError(409, "API with this URL already exists");
+  // }
 
   const api = await API.create({
-    applicationName,
+    application,
+    project,
     endpoints, 
     apiDescription,
     applicationDescription,
@@ -79,6 +72,8 @@ const createApi = asyncHandler(async (req, res) => {
 
 const getAllApis = asyncHandler(async (req, res) => {
   const apis = await API.find()
+    .populate("application", "_id appName")
+    .populate("project", "_id name")
     .populate("createdBy", "_id name username")
     .populate("updatedBy", "_id name username")
     .sort({ createdAt: -1 }); 
@@ -91,7 +86,10 @@ const getAllApis = asyncHandler(async (req, res) => {
 
 const getApiById = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const api = await API.findById(id).populate("createdBy", "_id name username");
+  const api = await API.findById(id)
+  .populate("application", "_id appName")
+  .populate("project", "_id name")
+  .populate("createdBy", "_id name username");
   if (!api) {
     throw new ApiError(404, "API not found");
   }

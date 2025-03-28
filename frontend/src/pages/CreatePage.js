@@ -1,11 +1,13 @@
 // createPage.js
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/Create.module.css";
 
 const CreatePage = () => {
   const navigate = useNavigate();
+  const [applicationOptions, setApplicationOptions] = useState([]);
+  const [projectOptions, setProjectOptions] = useState([]);
   const envOptions = [
     { name: "Dev", val: "dev" },
     { name: "QA", val: "qa" },
@@ -14,7 +16,8 @@ const CreatePage = () => {
   ];
 
   const [formData, setFormData] = useState({
-    applicationName: "",
+    application: "--select--",
+    project: "--select--",
     endpoints: [
       {
         environment: "",
@@ -35,6 +38,36 @@ const CreatePage = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    const fetchSelectOptions = async () => {
+      setLoading(true);
+      try {
+        const [appResponse, projectResponse] = await Promise.all([
+          axios.get("/api/applications/list", { withCredentials: true }),
+          axios.get("/api/applicationOptions", { withCredentials: true }),
+        ]);
+        setApplicationOptions([
+          { _id: "--select--", appName: "--select--" },
+          ...appResponse.data.data,
+        ]);
+        setProjectOptions([
+          { _id: "--select--", name: "--select--" },
+          ...projectResponse.data.data,
+        ]);
+      } catch (err) {
+        setError(err.response?.data?.message || "Failed to fetch options");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSelectOptions();
+  }, []);
+
+  const handleSelectChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
+  
   const handleChange = (e, index, field) => {
     const updatedEndpoints = [...formData.endpoints];
     updatedEndpoints[index][field] = e.target.value;
@@ -78,7 +111,7 @@ const CreatePage = () => {
         if (key !== "endpoints") {
           formDataToSend.append(key, formData[key]);
         }
-      }); 
+      });
 
       formData.endpoints.forEach((endpoint, index) => {
         Object.keys(endpoint).forEach((field) => {
@@ -113,7 +146,35 @@ const CreatePage = () => {
       <h2>Create API</h2>
       {error && <p className={styles.error}>{error}</p>}
       <form onSubmit={handleSubmit} className={styles.form}>
-        <input
+        <div className={styles.dataRow}>
+          <select
+            name="application"
+            value={formData.application}
+            onChange={handleSelectChange}
+            required
+            className={styles.select}
+          >
+            {applicationOptions.map((option, index) => (
+              <option key={option._id} value={option._id}>
+                {option.appName}
+              </option>
+            ))}
+          </select>
+          <select
+            name="project"
+            value={formData.project}
+            onChange={handleSelectChange}
+            required
+            className={styles.select}
+          >
+            {projectOptions.map((option, index) => (
+              <option key={option._id} value={option._id}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </div>
+        {/* <input
           type="text"
           name="applicationName"
           placeholder="Application Name"
@@ -122,7 +183,7 @@ const CreatePage = () => {
             setFormData({ ...formData, applicationName: e.target.value })
           }
           required
-        />
+        /> */}
 
         {formData.endpoints.map((endpoint, index) => (
           <div key={index} className={styles.endpointRow}>

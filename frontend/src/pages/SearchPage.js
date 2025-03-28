@@ -72,7 +72,7 @@ const SearchPage = () => {
   };
 
   const filteredApis = apis.filter((api) =>
-    api.applicationName.toLowerCase().includes(searchQuery.toLowerCase())
+    api.application?.appName?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -99,6 +99,7 @@ const SearchPage = () => {
           <tr>
             <th>#</th>
             <th>Application Name</th>
+            <th>Project Name</th>
             <th>Application desc</th>
             <th>Api desc </th>
             <th>Created By</th>

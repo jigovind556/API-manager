@@ -123,6 +123,21 @@ const getAllApplications = asyncHandler(async (req, res) => {
     );
 });
 
+const getApplicationList = asyncHandler(async (req, res) => {
+  const applications = await Application.find().select(
+    "appName applicationDescription"
+  )
+  .where({ enabled: true });
+  if (!applications) {  
+    throw new ApiError(404, "No applications found");
+  }
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, applications, "Applications retrieved successfully")
+    );
+});
+
 // Get Application by ID
 const getApplicationById = asyncHandler(async (req, res) => {
   const { id } = req.params;
@@ -181,6 +196,7 @@ const deleteApplication = asyncHandler(async (req, res) => {
 module.exports = {
   createApplication,
   getAllApplications,
+  getApplicationList,
   getApplicationById,
   updateApplication,
   deleteApplication,

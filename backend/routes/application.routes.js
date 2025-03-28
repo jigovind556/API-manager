@@ -5,6 +5,7 @@ const {
   getApplicationById,
   deleteApplication,
   updateApplication,
+  getApplicationList,
 } = require("../controllers/application.controller");
 const { verifyJWT } = require("../middlewares/auth.middleware");
 
@@ -14,6 +15,8 @@ router
   .route("/")
   .post(verifyJWT, createApplication)
   .get(verifyJWT, getAllApplications);
+
+router.get("/list", verifyJWT, getApplicationList);
 
 router
   .route("/:id")
