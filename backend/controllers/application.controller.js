@@ -1,7 +1,7 @@
 const { ApiResponse } = require("../utils/ApiResponse");
 const { ApiError } = require("../utils/ApiError");
 const { asyncHandler } = require("../utils/asyncHandler");
-const Application = require("../models/applications.model");
+const { Application } = require("../models/applications.model");
 
 // Create Application
 const createApplication = asyncHandler(async (req, res) => {
@@ -48,6 +48,27 @@ const getAllApplications = asyncHandler(async (req, res) => {
       },
     },
     {
+      $lookup: {
+        from: "appoptions",
+        localField: "projectname",
+        foreignField: "_id",
+        as: "projectname",
+      },
+    },
+    {
+      $unwind: { path: "$projectname", preserveNullAndEmptyArrays: true },
+    },
+    // {
+    //   $addFields: {
+    //     projectName: "$projectname.name",
+    //     appName: { $ifNull: ["$appName", ""] },
+    //     applicationName: { $ifNull: ["$applicationName", ""] },
+    //     applicationDescription: {
+    //       $ifNull: ["$applicationDescription", "N/A"],
+    //     },
+    //   },
+    // },
+    {
       $unwind: { path: "$createdBy", preserveNullAndEmptyArrays: true },
     },
     {
@@ -58,7 +79,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
         from: "applications",
         let: {
           appNameValue: "$appName",
-          applicationNameValue: "$applicationName",
+          projectnameValue: "$applicationName",
         },
         pipeline: [
           { $match: { $expr: { $eq: ["$appName", "$$appNameValue"] } } },
@@ -67,26 +88,28 @@ const getAllApplications = asyncHandler(async (req, res) => {
         as: "count_apps",
       },
     },
-    {
-      $lookup: {
-        from: "applications",
-        let: { applicationNameValue: "$applicationName" },
-        pipeline: [
-          {
-            $match: {
-              $expr: { $eq: ["$applicationName", "$$applicationNameValue"] },
-            },
-          },
-          { $count: "count" },
-        ],
-        as: "count_applications",
-      },
-    },
+    // {
+    //   $lookup: {
+    //     from: "applications",
+    //     let: { projectnameValue: "$projectname.name" },
+    //     pipeline: [
+    //       {
+    //         $match: {
+    //           $expr: { $eq: ["$projectname.name", "$$projectnameValue"] },
+    //         },
+    //       },
+    //       { $count: "count" },
+    //     ],
+    //     as: "count_projects",
+    //   },
+    // },
     {
       $addFields: {
-        count_apps: { $ifNull: [{ $arrayElemAt: ["$count_apps.count", 0] }, 0] },
-        count_applications: {
-          $ifNull: [{ $arrayElemAt: ["$count_applications.count", 0] }, 0],
+        // count_projects: {
+        //   $ifNull: [{ $arrayElemAt: ["$count_projects.count", 0] }, 0],
+        // },
+        count_apps: {
+          $ifNull: [{ $arrayElemAt: ["$count_apps.count", 0] }, 0],
         },
       },
     },

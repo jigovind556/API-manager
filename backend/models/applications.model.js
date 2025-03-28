@@ -2,8 +2,9 @@ const mongoose = require("mongoose");
 
 const applicationSchema = new mongoose.Schema(
   {
-    applicationName: {
-      type: String,
+    projectname: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "AppOption",
       required: true,
     },
     appName: {
@@ -23,12 +24,12 @@ const applicationSchema = new mongoose.Schema(
       required: true,
     },
     updatedBy: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "User",
-        },
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+    },
   },
   { timestamps: true }
 );
 
 const Application = mongoose.model("Application", applicationSchema);
-module.exports = Application;
+module.exports = {Application};

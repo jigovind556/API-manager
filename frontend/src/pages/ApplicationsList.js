@@ -33,7 +33,7 @@ const ApplicationsList = () => {
   useEffect(() => {
     const filtered = applications.filter(
       (app) =>
-        app.applicationName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        app.projectname?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
         app.appName.toLowerCase().includes(searchQuery.toLowerCase())
     );
     setFilteredApplications(filtered);

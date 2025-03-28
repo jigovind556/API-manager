@@ -31,7 +31,7 @@ const ApplicationDataRow = ({ api, index, onStatusChange }) => {
   return (
     <tr key={api._id} className={api.enabled ? "" : styles.disabledRow}>
       <td>{index}</td>
-      <td>{`${api.applicationName} (${api.count_applications})`}</td>
+      <td>{`${api.projectname?.name} (${api.count_projects})`}</td>
       <td>{`${api.appName} (${api.count_apps})`}</td>
       <td>{api.applicationDescription || "N/A"}</td>
       <td>
