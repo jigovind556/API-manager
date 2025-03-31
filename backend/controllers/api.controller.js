@@ -12,9 +12,9 @@ const createApi = asyncHandler(async (req, res) => {
     applicationDescription,
     request,
     response,
+    attachment,
   } = req.body;
 
-  const attachment = req.files ? req.files.map((file) => file.path) : [];
 
   const createdBy = req.user._id;
 
