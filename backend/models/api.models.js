@@ -65,8 +65,8 @@ const apiSchema = new mongoose.Schema(
       required: true,
     },
     attachment: {
-      type: String,
-      trim: true,
+      type: [String], // Store multiple file paths
+      default: [],
     },
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,

@@ -32,7 +32,7 @@ const CreatePage = () => {
     applicationDescription: "",
     request: "",
     response: "",
-    attachment: null,
+    attachments: [],
   });
 
   const [loading, setLoading] = useState(false);
@@ -67,7 +67,7 @@ const CreatePage = () => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
-  
+
   const handleChange = (e, index, field) => {
     const updatedEndpoints = [...formData.endpoints];
     updatedEndpoints[index][field] = e.target.value;
@@ -75,7 +75,7 @@ const CreatePage = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, attachment: e.target.files[0] });
+    setFormData({ ...formData, attachments: Array.from(e.target.files) });
   };
 
   const addEndpoint = () => {
@@ -107,8 +107,9 @@ const CreatePage = () => {
 
     try {
       const formDataToSend = new FormData();
+
       Object.keys(formData).forEach((key) => {
-        if (key !== "endpoints") {
+        if (key !== "endpoints" && key !== "attachments") {
           formDataToSend.append(key, formData[key]);
         }
       });
@@ -120,6 +121,11 @@ const CreatePage = () => {
             endpoint[field]
           );
         });
+      });
+
+      // Append multiple files
+      formData.attachments.forEach((file) => {
+        formDataToSend.append("attachments", file);
       });
 
       console.log("formDataToSend", formDataToSend);
@@ -291,7 +297,8 @@ const CreatePage = () => {
         <input
           type="file"
           name="attachment"
-          accept="application/pdf"
+          accept="*"
+          multiple
           onChange={handleFileChange}
         />
 

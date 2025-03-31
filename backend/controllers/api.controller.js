@@ -13,7 +13,9 @@ const createApi = asyncHandler(async (req, res) => {
     request,
     response,
   } = req.body;
-  const attachment = req.file ? req.file.path : null;
+
+  const attachment = req.files ? req.files.map((file) => file.path) : [];
+
   const createdBy = req.user._id;
 
   const endpoints = req.body.endpoints;
@@ -21,33 +23,30 @@ const createApi = asyncHandler(async (req, res) => {
   if (endpoints.length === 0) {
     throw new ApiError(400, "At least one endpoint must be provided");
   }
-  console.log('application', application);
-  console.log('project', project);
-  console.log('request', request);
-  console.log('response', response);
+
   // Check for missing fields
   if (!application || !project || !request || !response) {
     throw new ApiError(400, "All required fields must be provided");
   }
 
-    const requiredFields = [
-      "environment",
-      "source",
-      "destination",
-      "portNo",
-      "appUrl",
-      "dnsName",
-    ];
-    for (const endpoint of endpoints) {
-      for (const field of requiredFields) {
-        if (!endpoint[field]) {
-          throw new ApiError(
-            400,
-            `Missing field '${field}' in one of the endpoints`
-          );
-        }
+  const requiredFields = [
+    "environment",
+    "source",
+    "destination",
+    "portNo",
+    "appUrl",
+    "dnsName",
+  ];
+  for (const endpoint of endpoints) {
+    for (const field of requiredFields) {
+      if (!endpoint[field]) {
+        throw new ApiError(
+          400,
+          `Missing field '${field}' in one of the endpoints`
+        );
       }
     }
+  }
 
   // const existingApi = await API.findOne({ applicationName });
   // if (existingApi) {
@@ -57,7 +56,7 @@ const createApi = asyncHandler(async (req, res) => {
   const api = await API.create({
     application,
     project,
-    endpoints, 
+    endpoints,
     apiDescription,
     applicationDescription,
     request: JSON.parse(request),

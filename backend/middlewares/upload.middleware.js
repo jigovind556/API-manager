@@ -8,22 +8,22 @@ const storage = multer.diskStorage({
     cb(null, "uploads/"); // Store files in 'uploads/' directory
   },
   filename: (req, file, cb) => {
-    var fname = Date.now() + path.extname(file.originalname);
-    console.log('fname : ',fname);
-    cb(null, fname); 
+    const fname = Date.now() + "-" + file.originalname;
+    console.log("fname:", fname);
+    cb(null, fname);
   },
 });
 
-// File filter: Allow only PDFs
+// File filter: Allow all file types
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === "application/pdf") {
-    cb(null, true);
-  } else {
-    cb(new ApiError(501,"Only PDF files are allowed!"), false);
-  }
+  cb(null, true); // Accept all file types
 };
 
-// Multer upload middleware
-const upload = multer({ storage, fileFilter });
+// Multer upload middleware (Allow up to 5 files)
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 },
+}); // Max file size 10MB
 
 module.exports = upload;

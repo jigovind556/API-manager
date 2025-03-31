@@ -15,7 +15,7 @@ const router = Router();
 
 router
   .route("/")
-  .post(verifyJWT, upload.single("attachment"), createApi)
+  .post(verifyJWT, upload.array("attachments", 5), createApi) // Allow up to 5 files
   .get(verifyJWT, getAllApis);
 
 router.route("/history/:id").get(verifyJWT, getApiHistory);
