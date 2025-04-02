@@ -84,3 +84,106 @@ h2{
   text-decoration: underline;
   margin-right: 5px;
 }
+
+/* Modal Overlay */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+/* Modal Content */
+.modalContent {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  width: 60%;
+  max-width: 800px;
+  max-height: 80vh; /* Ensures modal is not too big */
+  overflow-y: auto; /* Enables scrolling */
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Modal Header */
+.modalHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+}
+
+/* Close Button */
+.closeButton {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: red;
+}
+
+/* Attachments Grid */
+.attachmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 15px;
+  overflow-y: auto;
+  max-height: 60vh; /* Ensures scrolling if too many items */
+}
+
+/* Attachment Item */
+.attachmentItem {
+  background: #f8f8f8;
+  padding: 10px;
+  border-radius: 8px;
+  text-align: center;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Attachment Image */
+.attachmentImage {
+  width: 100%;
+  max-width: 140px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 5px;
+}
+
+/* File Icon */
+.fileIcon {
+  font-size: 40px;
+  color: #007bff;
+}
+
+/* File Link */
+.attachmentItem a {
+  display: block;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #007bff;
+  text-decoration: none;
+}
+
+.attachmentItem a:hover {
+  text-decoration: underline;
+}
+
+/* View Attachments Button */
+.viewAttachmentsButton {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.viewAttachmentsButton:hover {
+  background-color: #218838;
+}
