@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieParser = require('cookie-parser')
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
 
@@ -15,7 +16,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static("Public"));
 app.use(cookieParser());
 
-
 // import routes
 const userRouter = require('./routes/user.routes.js');
 const apiRouter = require('./routes/api.routes.js');
@@ -24,6 +24,7 @@ const applicationRouter = require("./routes/application.routes");
 
 
 // routes declaration
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/users", userRouter);
 app.use("/api/apis", apiRouter);
 app.use("/api/applicationOptions", appOptionsRouter);

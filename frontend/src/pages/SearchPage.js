@@ -76,7 +76,13 @@ const SearchPage = () => {
   );
 
   return (
-    <div className={styles.container} style={{backgroundColor: theme === 'light' ? '#f0f0f0' : '#333', color: theme === 'light' ? '#333' : '#f0f0f0'}}>
+    <div
+      className={styles.container}
+      style={{
+        backgroundColor: theme === "light" ? "#f0f0f0" : "#333",
+        color: theme === "light" ? "#333" : "#f0f0f0",
+      }}
+    >
       <h2>Search APIs</h2>
       <div className={styles.searchBox}>
         <input
@@ -104,15 +110,16 @@ const SearchPage = () => {
             <th>Api desc </th>
             <th>Created By</th>
             <th>Updated By</th>
+            <th>Assets</th> 
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {filteredApis.length > 0 ? (
-            filteredApis.map((api,index) => (
+            filteredApis.map((api, index) => (
               <DataRow
                 key={api._id}
-                index={index+1}
+                index={index + 1}
                 api={api}
                 onEdit={handleEdit}
                 onDelete={handleDelete}

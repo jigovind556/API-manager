@@ -28,6 +28,30 @@ const DataRow = ({ api, index = "", onEdit, onDelete }) => {
       <td>
         {api.updatedBy && `${api.updatedBy?.name} @${api.updatedBy?.username})`}
       </td>
+      <td>
+        {api.attachment?.length > 0
+          ? api.attachment.map((file, i) =>
+              file.match(/\.(jpeg|jpg|png|gif)$/i) ? (
+                <img
+                  key={i}
+                  src={`/${file}`}
+                  alt="Attachment"
+                  className={styles.assetImage}
+                />
+              ) : (
+                <a
+                  key={i}
+                  href={`/${file}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={styles.assetLink}
+                >
+                  View File
+                </a>
+              )
+            )
+          : "No Assets"}
+      </td>
       <td className={styles.actionButtons}>
         <button className={styles.editButton} onClick={() => onEdit(api)}>
           <FaEdit />

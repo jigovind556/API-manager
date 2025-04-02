@@ -69,3 +69,18 @@ h2{
 .deleteButton {
   color: #dc3545;
 }
+
+.assetImage {
+  width: 50px;
+  height: 50px;
+  object-fit: cover;
+  margin-right: 5px;
+  border-radius: 5px;
+}
+
+.assetLink {
+  display: inline-block;
+  color: blue;
+  text-decoration: underline;
+  margin-right: 5px;
+}
