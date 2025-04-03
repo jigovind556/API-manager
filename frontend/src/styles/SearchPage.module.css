@@ -140,6 +140,7 @@ h2{
 /* Attachment Item */
 .attachmentItem {
   background: #f8f8f8;
+  cursor: pointer;
   padding: 10px;
   border-radius: 8px;
   text-align: center;
@@ -186,4 +187,15 @@ h2{
 
 .viewAttachmentsButton:hover {
   background-color: #218838;
+}
+
+.jsonViewer {
+  background: #f4f4f4;
+  padding: 10px;
+  border-radius: 5px;
+  font-family: monospace;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  max-height: 300px;
+  overflow-y: auto;
 }

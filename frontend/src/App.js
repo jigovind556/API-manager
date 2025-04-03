@@ -12,93 +12,96 @@ import ApplicationsList from "./pages/ApplicationsList";
 import EditApplication from "./pages/EditApplication";
 import { MyProvider } from "./context/MyContext";
 import ApiChangeHistory from "./pages/ApiChangeHistory";
+import { ModalProvider } from "./context/ModalContext";
 
 function App() {
   return (
     <Router>
-      <UserProvider>
-        <MyProvider   >
-        <Routes>
-          {/* Authentication Routes */}
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+      <ModalProvider>
+        <UserProvider>
+          <MyProvider>
+            <Routes>
+              {/* Authentication Routes */}
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/register" element={<RegisterPage />} />
 
-          {/* Protected Routes inside Layout */}
-          <Route
-            path="/"
-            element={
-              <Layout>
-                <h2 className="title">Welcome to the Dashboard</h2>
-              </Layout>
-            }
-          />
-          <Route
-            path="/create-api"
-            element={
-              <Layout>
-                <CreatePage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/api-update-history"
-            element={
-              <Layout>
-                <ApiChangeHistory />
-              </Layout>
-            }
-          />
-          <Route
-            path="/api-update-history/:id"
-            element={
-              <Layout>
-                <ApiChangeHistory />
-              </Layout>
-            }
-          />
-          <Route
-            path="/create-application"
-            element={
-              <Layout>
-                <CreateApplication />
-              </Layout>
-            }
-          />
-          <Route
-            path="/applications-search"
-            element={
-              <Layout>
-                <ApplicationsList />
-              </Layout>
-            }
-          />
-          <Route
-            path="/search-api"
-            element={
-              <Layout>
-                <SearchPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/edit/:id"
-            element={
-              <Layout>
-                <EditPage />
-              </Layout>
-            }
-          />
-          <Route
-            path="/edit-application/:id"
-            element={
-              <Layout>
-                <EditApplication />
-              </Layout>
-            }
-          />
-        </Routes>
-        </MyProvider>
-      </UserProvider>
+              {/* Protected Routes inside Layout */}
+              <Route
+                path="/"
+                element={
+                  <Layout>
+                    <h2 className="title">Welcome to the Dashboard</h2>
+                  </Layout>
+                }
+              />
+              <Route
+                path="/create-api"
+                element={
+                  <Layout>
+                    <CreatePage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/api-update-history"
+                element={
+                  <Layout>
+                    <ApiChangeHistory />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/api-update-history/:id"
+                element={
+                  <Layout>
+                    <ApiChangeHistory />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/create-application"
+                element={
+                  <Layout>
+                    <CreateApplication />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/applications-search"
+                element={
+                  <Layout>
+                    <ApplicationsList />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/search-api"
+                element={
+                  <Layout>
+                    <SearchPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/edit/:id"
+                element={
+                  <Layout>
+                    <EditPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/edit-application/:id"
+                element={
+                  <Layout>
+                    <EditApplication />
+                  </Layout>
+                }
+              />
+            </Routes>
+          </MyProvider>
+        </UserProvider>
+      </ModalProvider>
     </Router>
   );
 }
