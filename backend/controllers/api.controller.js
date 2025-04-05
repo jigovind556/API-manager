@@ -224,6 +224,22 @@ const updateApi = asyncHandler(async (req, res) => {
       }
     }
 
+    // Handle attachments
+    let finalAttachments = [];
+    
+    // Add existing attachments that weren't removed
+    if (updates.existingAttachments) {
+      finalAttachments = finalAttachments.concat(updates.existingAttachments);
+    }
+
+    // Add new attachments
+    if (req.files && req.files.length > 0) {
+      const newAttachments = req.files.map(file => file.path);
+      finalAttachments = finalAttachments.concat(newAttachments);
+    }
+
+    updates.attachment = finalAttachments;
+
     // Track actual changes
     const changes = findChanges(oldData, updates);
 

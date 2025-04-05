@@ -92,3 +92,117 @@ button:disabled {
   background: gray;
   cursor: not-allowed;
 }
+
+.attachmentsSection {
+  margin: 20px 0;
+}
+
+.attachmentsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 15px;
+  margin-top: 10px;
+}
+
+@media (max-width: 1200px) {
+  .attachmentsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 900px) {
+  .attachmentsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 600px) {
+  .attachmentsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.attachmentItem {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-width: 0; /* Prevents overflow */
+}
+
+.attachmentItem:hover {
+  background-color: #f0f0f0;
+}
+
+.attachmentImage {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.fileIcon {
+  font-size: 50px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.downloadLink {
+  font-size: 14px;
+  text-align: center;
+  word-break: break-all;
+  max-width: 100%;
+  padding: 0 5px;
+}
+
+.removeButton {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  color: #ff4444;
+  cursor: pointer;
+  padding: 2px;
+  font-size: 14px;
+  opacity: 0.7;
+  transition: opacity 0.2s ease;
+}
+
+.removeButton:hover {
+  opacity: 1;
+}
+
+.fileUploadSection {
+  margin: 20px 0;
+}
+
+.newAttachments {
+  margin-top: 10px;
+}
+
+.newAttachmentItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  background-color: #f0f0f0;
+  border-radius: 4px;
+  margin: 5px 0;
+}
+
+.newAttachmentItem .fileIcon {
+  font-size: 16px;
+  margin: 0;
+}
+
+.newAttachmentItem span {
+  font-size: 14px;
+  word-break: break-all;
+}

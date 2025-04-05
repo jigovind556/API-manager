@@ -2,10 +2,13 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { useNavigate, useParams } from "react-router-dom";
 import styles from "../styles/Create.module.css";
+import { FaFileAlt, FaTrash } from "react-icons/fa";
 
 const EditPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [applicationOptions, setApplicationOptions] = useState([]);
+  const [projectOptions, setProjectOptions] = useState([]);
   const envOptions = [
     { name: "Dev", val: "dev" },
     { name: "QA", val: "qa" },
@@ -14,29 +17,44 @@ const EditPage = () => {
   ];
 
   const [formData, setFormData] = useState({
-    applicationName: "",
+    application: "--select--",
+    project: "--select--",
     endpoints: [],
     apiDescription: "",
     applicationDescription: "",
     request: "",
     response: "",
-    attachment: null,
+    attachments: [],
+    existingAttachments: [],
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    const fetchApiData = async () => {
+    const fetchData = async () => {
+      setLoading(true);
       try {
-        const response = await axios.get(`/api/apis/${id}`, {
-          withCredentials: true,
-        });
-        const data = response.data.data;
+        const [apiResponse, appResponse, projectResponse] = await Promise.all([
+          axios.get(`/api/apis/${id}`, { withCredentials: true }),
+          axios.get("/api/applications/list", { withCredentials: true }),
+          axios.get("/api/applicationOptions", { withCredentials: true }),
+        ]);
+
+        const apiData = apiResponse.data.data;
+        setApplicationOptions([
+          { _id: "--select--", appName: "--select--" },
+          ...appResponse.data.data,
+        ]);
+        setProjectOptions([
+          { _id: "--select--", name: "--select--" },
+          ...projectResponse.data.data,
+        ]);
 
         setFormData({
-          applicationName: data.applicationName || "",
-          endpoints: data.endpoints || [
+          application: apiData.application._id || "--select--",
+          project: apiData.project._id || "--select--",
+          endpoints: apiData.endpoints || [
             {
               environment: "",
               source: "",
@@ -46,19 +64,27 @@ const EditPage = () => {
               dnsName: "",
             },
           ],
-          apiDescription: data.apiDescription || "",
-          applicationDescription: data.applicationDescription || "",
-          request: JSON.stringify(data.request || ""),
-          response: JSON.stringify(data.response || ""),
-          attachment: null,
+          apiDescription: apiData.apiDescription || "",
+          applicationDescription: apiData.applicationDescription || "",
+          request: JSON.stringify(apiData.request || ""),
+          response: JSON.stringify(apiData.response || ""),
+          attachments: [],
+          existingAttachments: apiData.attachment || [],
         });
       } catch (err) {
-        setError("Failed to fetch API details");
+        setError("Failed to fetch data");
+      } finally {
+        setLoading(false);
       }
     };
 
-    fetchApiData();
+    fetchData();
   }, [id]);
+
+  const handleSelectChange = (e) => {
+    const { name, value } = e.target;
+    setFormData({ ...formData, [name]: value });
+  };
 
   const handleChange = (e, index, field) => {
     const updatedEndpoints = [...formData.endpoints];
@@ -67,7 +93,7 @@ const EditPage = () => {
   };
 
   const handleFileChange = (e) => {
-    setFormData({ ...formData, attachment: e.target.files[0] });
+    setFormData({ ...formData, attachments: Array.from(e.target.files) });
   };
 
   const addEndpoint = () => {
@@ -92,6 +118,27 @@ const EditPage = () => {
     setFormData({ ...formData, endpoints: updatedEndpoints });
   };
 
+  const removeExistingAttachment = (index) => {
+    const updatedAttachments = [...formData.existingAttachments];
+    updatedAttachments.splice(index, 1);
+    setFormData({ ...formData, existingAttachments: updatedAttachments });
+  };
+
+  const handleDownload = async (file) => {
+    try {
+      const response = await fetch(`/${file}`, { method: "GET" });
+      if (!response.ok) {
+        throw new Error("Failed to download file");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Download error:", error);
+      setError("Failed to download file");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -99,8 +146,9 @@ const EditPage = () => {
 
     try {
       const formDataToSend = new FormData();
+
       Object.keys(formData).forEach((key) => {
-        if (key !== "endpoints") {
+        if (key !== "endpoints" && key !== "attachments" && key !== "existingAttachments") {
           formDataToSend.append(key, formData[key]);
         }
       });
@@ -114,6 +162,14 @@ const EditPage = () => {
         });
       });
 
+      formData.existingAttachments.forEach((attachment, index) => {
+        formDataToSend.append(`existingAttachments[${index}]`, attachment);
+      });
+
+      formData.attachments.forEach((file) => {
+        formDataToSend.append("attachments", file);
+      });
+
       await axios.put(`/api/apis/${id}`, formDataToSend, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
@@ -122,7 +178,11 @@ const EditPage = () => {
       alert("API Updated Successfully!");
       navigate("/search");
     } catch (err) {
-      setError("Failed to update API");
+      let errorMessage = "Failed to update API";
+      if (err.response && err.response.data) {
+        errorMessage = err.response.data.message || errorMessage;
+      }
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -133,16 +193,34 @@ const EditPage = () => {
       <h2>Edit API</h2>
       {error && <p className={styles.error}>{error}</p>}
       <form onSubmit={handleSubmit} className={styles.form}>
-        <input
-          type="text"
-          name="applicationName"
-          placeholder="Application Name"
-          value={formData.applicationName}
-          onChange={(e) =>
-            setFormData({ ...formData, applicationName: e.target.value })
-          }
-          required
-        />
+        <div className={styles.dataRow}>
+          <select
+            name="application"
+            value={formData.application}
+            onChange={handleSelectChange}
+            required
+            className={styles.select}
+          >
+            {applicationOptions.map((option) => (
+              <option key={option._id} value={option._id}>
+                {option.appName}
+              </option>
+            ))}
+          </select>
+          <select
+            name="project"
+            value={formData.project}
+            onChange={handleSelectChange}
+            required
+            className={styles.select}
+          >
+            {projectOptions.map((option) => (
+              <option key={option._id} value={option._id}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
         {formData.endpoints.map((endpoint, index) => (
           <div key={index} className={styles.endpointRow}>
@@ -206,7 +284,7 @@ const EditPage = () => {
         <div className={styles.descRow}>
           <textarea
             name="apiDescription"
-            placeholder="API Description"
+            placeholder="API Description (Optional)"
             value={formData.apiDescription}
             onChange={(e) =>
               setFormData({ ...formData, apiDescription: e.target.value })
@@ -214,7 +292,7 @@ const EditPage = () => {
           ></textarea>
           <textarea
             name="applicationDescription"
-            placeholder="Application Description"
+            placeholder="Application Description (Optional)"
             value={formData.applicationDescription}
             onChange={(e) =>
               setFormData({
@@ -247,12 +325,61 @@ const EditPage = () => {
           ></textarea>
         </div>
 
-        <input
-          type="file"
-          name="attachment"
-          accept="application/pdf"
-          onChange={handleFileChange}
-        />
+        <div className={styles.attachmentsSection}>
+          <h3>Attachments</h3>
+          <div className={styles.attachmentsGrid}>
+            {formData.existingAttachments.map((file, index) => (
+              <div key={index} className={styles.attachmentItem}>
+                {file.match(/\.(jpeg|jpg|png|gif)$/i) ? (
+                  <div onClick={() => handleDownload(file)}>
+                    <img
+                      src={`/${file}`}
+                      alt="Attachment"
+                      className={styles.attachmentImage}
+                    />
+                    <p>{file.split("/").pop()}</p>
+                  </div>
+                ) : (
+                  <div onClick={() => handleDownload(file)}>
+                    <FaFileAlt className={styles.fileIcon} />
+                    <div className={styles.downloadLink}>
+                      {file.split("/").pop()}
+                    </div>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => removeExistingAttachment(index)}
+                  className={styles.removeButton}
+                >
+                  <FaTrash />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div className={styles.fileUploadSection}>
+          <h3>Add New Attachments</h3>
+          <input
+            type="file"
+            name="attachment"
+            accept="*"
+            multiple
+            onChange={handleFileChange}
+          />
+          {formData.attachments.length > 0 && (
+            <div className={styles.newAttachments}>
+              <h4>New Files to Upload:</h4>
+              {formData.attachments.map((file, index) => (
+                <div key={index} className={styles.newAttachmentItem}>
+                  <FaFileAlt className={styles.fileIcon} />
+                  <span>{file.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
 
         <button type="submit" disabled={loading}>
           {loading ? "Updating..." : "Update API"}
