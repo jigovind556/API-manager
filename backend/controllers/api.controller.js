@@ -284,6 +284,20 @@ const getApiHistory = asyncHandler(async (req, res) => {
     const history = await API_Log.find(query)
       .populate("updatedBy", "_id name username")
       .populate("apiId", "_id applicationName apiDescription")
+      .populate({
+        path: "apiId",
+        select: "_id apiDescription applicationDescription",
+        populate: [
+          {
+            path: "project",
+            select: "_id name",
+          },
+          {
+            path: "application",
+            select: "_id appName",
+          },
+        ],
+      })
       .sort({ updatedAt: -1 })
       .lean();
 

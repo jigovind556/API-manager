@@ -41,7 +41,8 @@ const ApiChangeHistory = () => {
         <table className={styles.table}>
           <thead>
             <tr>
-            <th>Application Name</th>
+              <th>Application Name</th>
+              <th>Project Name</th>
               <th>Updated By</th>
               <th>Updated At</th>
               <th>Changes</th>
@@ -50,7 +51,8 @@ const ApiChangeHistory = () => {
           <tbody>
             {history.map((entry) => (
               <tr key={entry._id}>
-                <td>{entry.apiId?.applicationName}</td>
+                <td>{entry.apiId?.application?.appName}</td>
+                <td>{entry.apiId?.project?.name}</td>
                 <td>{entry.updatedBy?.name}</td>
                 <td>{new Date(entry.updatedAt).toLocaleString()}</td>
                 <td>
