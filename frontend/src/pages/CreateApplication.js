@@ -3,10 +3,12 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import styles from "../styles/Create.module.css";
+import AddProjectModal from "../components/AddProjectModal";
+import { useModal } from "../context/ModalContext";
 
 const CreateApplication = () => {
   const navigate = useNavigate();
-
+  const { showModal, hideModal } = useModal();
   const [selectOptions, setSelectOptions] = useState([]);
   const [formData, setFormData] = useState({
     applicationName: "",
@@ -66,11 +68,11 @@ const CreateApplication = () => {
         withCredentials: true,
       });
 
-        setFormData({
-            applicationName: "",
-            appName: "",
-            applicationDescription: "",
-            });
+      setFormData({
+        applicationName: "",
+        appName: "",
+        applicationDescription: "",
+      });
       alert("Application Created Successfully!");
       //   navigate("/");
     } catch (err) {
@@ -91,24 +93,44 @@ const CreateApplication = () => {
     }
   };
 
+  const handleAddProject = () => {
+    showModal(
+      <AddProjectModal
+        onSuccess={(newProject) => {
+          setSelectOptions([...selectOptions, newProject]);
+        }}
+        onClose={hideModal}
+      />
+    );
+  };
+
   return (
     <div className={styles.container}>
       <h2>Create Application</h2>
       {error && <p className={styles.error}>{error}</p>}
       <form onSubmit={handleSubmit} className={styles.form}>
-        <select
-          name="applicationName"
-          value={formData.applicationName}
-          onChange={handleChange}
-          required
-          className={styles.select}
-        >
-          {selectOptions.map((option, index) => (
-            <option key={option._id} value={option.name}>
-              {option.name}
-            </option>
-          ))}
-        </select>
+        <div className={styles.projectSelectGroup}>
+          <select
+            name="applicationName"
+            value={formData.applicationName}
+            onChange={handleChange}
+            required
+            className={styles.select}
+          >
+            {selectOptions.map((option, index) => (
+              <option key={option._id} value={option.name}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={handleAddProject}
+            className={styles.addProjectBtn}
+          >
+            Add Project
+          </button>
+        </div>
         <input
           type="text"
           name="appName"
