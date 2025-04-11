@@ -11,7 +11,7 @@ const CreateApplication = () => {
   const { showModal, hideModal } = useModal();
   const [selectOptions, setSelectOptions] = useState([]);
   const [formData, setFormData] = useState({
-    applicationName: "",
+    projectname: "",
     appName: "",
     applicationDescription: "",
   });
@@ -58,7 +58,7 @@ const CreateApplication = () => {
       //     formDataToSend.append(key, formData[key]);
       //   });
 
-      if (formData.applicationName === "--select--") {
+      if (formData.projectname === "--select--") {
         throw new Error("Please select an application");
       }
       if (formData.appName === "") {
@@ -69,7 +69,7 @@ const CreateApplication = () => {
       });
 
       setFormData({
-        applicationName: "",
+        projectname: "",
         appName: "",
         applicationDescription: "",
       });
@@ -111,14 +111,14 @@ const CreateApplication = () => {
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.projectSelectGroup}>
           <select
-            name="applicationName"
-            value={formData.applicationName}
+            name="projectname"
+            value={formData.projectname}
             onChange={handleChange}
             required
             className={styles.select}
           >
             {selectOptions.map((option, index) => (
-              <option key={option._id} value={option.name}>
+              <option key={option._id} value={option._id}>
                 {option.name}
               </option>
             ))}

@@ -7,6 +7,7 @@ import styles from "../styles/Create.module.css";
 const CreatePage = () => {
   const navigate = useNavigate();
   const [applicationOptions, setApplicationOptions] = useState([]);
+  const [filteredApplications, setFilteredApplications] = useState([]);
   const [projectOptions, setProjectOptions] = useState([]);
   const envOptions = [
     { name: "Dev", val: "dev" },
@@ -47,8 +48,11 @@ const CreatePage = () => {
           axios.get("/api/applicationOptions", { withCredentials: true }),
         ]);
         setApplicationOptions([
-          { _id: "--select--", appName: "--select--" },
+          { _id: "--select--", appName: "--select--", projectname: "--select--" },
           ...appResponse.data.data,
+        ]);
+        setFilteredApplications([
+          { _id: "--select--", appName: "--select--", projectname: "--select--" }
         ]);
         setProjectOptions([
           { _id: "--select--", name: "--select--" },
@@ -62,6 +66,28 @@ const CreatePage = () => {
     };
     fetchSelectOptions();
   }, []);
+
+  useEffect(() => {
+    // Filter applications when project changes
+    if (formData.project === "--select--") {
+      setFilteredApplications([
+        { _id: "--select--", appName: "--select--", projectname: "--select--" }
+      ]);
+    } else {
+      const filtered = applicationOptions.filter(
+        app => app.projectname === formData.project || app._id === "--select--"
+      );
+      setFilteredApplications(filtered);
+      
+      // Reset application selection if current selection is not in filtered list
+      if (!filtered.find(app => app._id === formData.application)) {
+        setFormData(prev => ({
+          ...prev,
+          application: "--select--"
+        }));
+      }
+    }
+  }, [formData.project, applicationOptions]);
 
   const handleSelectChange = (e) => {
     const { name, value } = e.target;
@@ -154,28 +180,28 @@ const CreatePage = () => {
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.dataRow}>
           <select
-            name="application"
-            value={formData.application}
-            onChange={handleSelectChange}
-            required
-            className={styles.select}
-          >
-            {applicationOptions.map((option, index) => (
-              <option key={option._id} value={option._id}>
-                {option.appName}
-              </option>
-            ))}
-          </select>
-          <select
             name="project"
             value={formData.project}
             onChange={handleSelectChange}
             required
             className={styles.select}
           >
-            {projectOptions.map((option, index) => (
+            {projectOptions.map((option) => (
               <option key={option._id} value={option._id}>
                 {option.name}
+              </option>
+            ))}
+          </select>
+          <select
+            name="application"
+            value={formData.application}
+            onChange={handleSelectChange}
+            required
+            className={styles.select}
+          >
+            {filteredApplications.map((option) => (
+              <option key={option._id} value={option._id}>
+                {option.appName}
               </option>
             ))}
           </select>

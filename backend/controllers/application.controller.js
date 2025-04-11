@@ -5,17 +5,26 @@ const { Application } = require("../models/applications.model");
 
 // Create Application
 const createApplication = asyncHandler(async (req, res) => {
-  const { applicationName, appName, applicationDescription } = req.body;
+  const { projectname, appName, applicationDescription } = req.body;
   const createdBy = req.user._id;
 
-  if (!applicationName || !appName) {
-    console.log("applicationName", applicationName);
+  if (!projectname || !appName) {
+    console.log("projectname", projectname);
     console.log("appName", appName);
     throw new ApiError(400, "Application Name and App Name are required");
   }
 
+  // Check if application with same name already exists
+  const existingApplication = await Application.findOne({
+    appName: { $regex: new RegExp(`^${appName}$`, "i") },
+  });
+
+  if (existingApplication) {
+    throw new ApiError(400, "Application with this name already exists");
+  }
+
   const newApplication = await Application.create({
-    applicationName,
+    projectname,
     appName,
     applicationDescription,
     createdBy,
@@ -124,10 +133,9 @@ const getAllApplications = asyncHandler(async (req, res) => {
 });
 
 const getApplicationList = asyncHandler(async (req, res) => {
-  const applications = await Application.find().select(
-    "appName applicationDescription"
-  )
-  .where({ enabled: true });
+  const applications = await Application.find()
+    .select("projectname appName applicationDescription")
+    .where({ enabled: true });
   if (!applications) {  
     throw new ApiError(404, "No applications found");
   }
@@ -161,6 +169,18 @@ const updateApplication = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
   const updatedBy = req.user._id;
+
+  // If application name is being updated, check for uniqueness
+  if (updates.appName) {
+    const existingApplication = await Application.findOne({
+      appName: { $regex: new RegExp(`^${updates.appName}$`, "i") },
+      _id: { $ne: id }, // Exclude current application from check
+    });
+
+    if (existingApplication) {
+      throw new ApiError(400, "Application with this name already exists");
+    }
+  }
 
   const application = await Application.findByIdAndUpdate(
     id,
