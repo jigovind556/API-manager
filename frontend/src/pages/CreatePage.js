@@ -1,14 +1,18 @@
-// createPage.js
+// CreatePage.js - Handles both create and edit functionality
 import { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import styles from "../styles/Create.module.css";
+import { FaFileAlt, FaTrash } from "react-icons/fa";
 
 const CreatePage = () => {
+  const { id } = useParams(); // Get ID from URL if editing
+  const isEditMode = !!id; // Check if we're in edit mode
   const navigate = useNavigate();
   const [applicationOptions, setApplicationOptions] = useState([]);
   const [filteredApplications, setFilteredApplications] = useState([]);
   const [projectOptions, setProjectOptions] = useState([]);
+
   const envOptions = [
     { name: "Dev", val: "dev" },
     { name: "QA", val: "qa" },
@@ -16,17 +20,39 @@ const CreatePage = () => {
     { name: "Prod", val: "prod" },
   ];
 
-  const [formData, setFormData] = useState({
-    application: "--select--",
-    project: "--select--",
+  const httpTypeOptions = [
+    { name: "GET", val: "GET" },
+    { name: "POST", val: "POST" },
+    { name: "PUT", val: "PUT" },
+    { name: "DELETE", val: "DELETE" },
+    { name: "PATCH", val: "PATCH" },
+  ];
+
+  const apiTypeOptions = [
+    { name: "API", val: "API" },
+    { name: "UI", val: "UI" },
+    { name: "Integration", val: "Integration" },
+  ];
+
+  // Initial form data structure
+  const initialFormData = {
+    type: "Integration",
+    environment: "",
+    application: "--select-application--",
+    project: "--select-project--",
     endpoints: [
       {
-        environment: "",
         source: "",
         destination: "",
         portNo: "",
         appUrl: "",
         dnsName: "",
+        // API specific fields
+        apiName: "",
+        description: "",
+        httpType: "GET",
+        header: false,
+        apiUrl: "",
       },
     ],
     apiDescription: "",
@@ -34,60 +60,170 @@ const CreatePage = () => {
     request: "",
     response: "",
     attachments: [],
-  });
+    existingAttachments: [], // Only used in edit mode
+  };
 
+  const [formData, setFormData] = useState(initialFormData);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  // Determine required fields based on type
+  const getRequiredFields = (type) => {
+    switch (type) {
+      case "API":
+        return [
+          "httpType",
+          "source",
+          "destination",
+          "portNo",
+          "apiUrl",
+          "dnsName",
+        ];
+      case "UI":
+        return [ "appUrl"];
+      case "Integration":
+      default:
+        return [
+          "source",
+          "destination",
+          "portNo",
+          "appUrl",
+          "dnsName",
+        ];
+    }
+  };
+
   useEffect(() => {
-    const fetchSelectOptions = async () => {
+    const fetchOptionsAndData = async () => {
       setLoading(true);
       try {
+        // Fetch applications and projects
         const [appResponse, projectResponse] = await Promise.all([
           axios.get("/api/applications/list", { withCredentials: true }),
           axios.get("/api/applicationOptions", { withCredentials: true }),
         ]);
+
         setApplicationOptions([
-          { _id: "--select--", appName: "--select--", projectname: "--select--" },
+          {
+            _id: "--select-application--",
+            appName: "--select application--",
+            projectname: "--select-application--",
+          },
           ...appResponse.data.data,
         ]);
-        setFilteredApplications([
-          { _id: "--select--", appName: "--select--", projectname: "--select--" }
-        ]);
+
         setProjectOptions([
-          { _id: "--select--", name: "--select--" },
+          { _id: "--select-project--", name: "--select project--" },
           ...projectResponse.data.data,
         ]);
+
+        // If in edit mode, fetch the API data
+        if (isEditMode) {
+          const apiResponse = await axios.get(`/api/apis/${id}`, {
+            withCredentials: true,
+          });
+
+          const apiData = apiResponse.data.data;
+          const apiType = apiData.type || "Integration";
+
+          setFormData({
+            type: apiType,
+            application: apiData.application._id || "--select-application--",
+            project: apiData.project._id || "--select-project--",
+            environment: apiData.environment || "",
+            endpoints: apiData.endpoints || [
+              {
+                // Fields will be added based on type in useEffect
+              },
+            ],
+            apiDescription: apiData.apiDescription || "",
+            applicationDescription: apiData.applicationDescription || "",
+            request: JSON.stringify(apiData.request || ""),
+            response: JSON.stringify(apiData.response || ""),
+            attachments: [],
+            existingAttachments: apiData.attachment || [],
+          });
+        } else {
+          // Initialize filtered applications for create mode
+          setFilteredApplications([
+            {
+              _id: "--select-application--",
+              appName: "--select application--",
+              projectname: "--select-application--",
+            },
+          ]);
+        }
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to fetch options");
+        setError(err.response?.data?.message || "Failed to fetch data");
       } finally {
         setLoading(false);
       }
     };
-    fetchSelectOptions();
-  }, []);
+
+    fetchOptionsAndData();
+  }, [id, isEditMode]);
 
   useEffect(() => {
     // Filter applications when project changes
-    if (formData.project === "--select--") {
+    if (formData.project === "--select-project--") {
       setFilteredApplications([
-        { _id: "--select--", appName: "--select--", projectname: "--select--" }
+        {
+          _id: "--select-application--",
+          appName: "--select application--",
+          projectname: "--select-application--",
+        },
       ]);
     } else {
       const filtered = applicationOptions.filter(
-        app => app.projectname === formData.project || app._id === "--select--"
+        (app) =>
+          app.projectname === formData.project ||
+          app._id === "--select-application--"
       );
       setFilteredApplications(filtered);
-      
+
       // Reset application selection if current selection is not in filtered list
-      if (!filtered.find(app => app._id === formData.application)) {
-        setFormData(prev => ({
+      if (!filtered.find((app) => app._id === formData.application)) {
+        setFormData((prev) => ({
           ...prev,
-          application: "--select--"
+          application: "--select-application--",
         }));
       }
     }
   }, [formData.project, applicationOptions]);
+
+  // Handle API type change
+  const handleTypeChange = (e) => {
+    const newType = e.target.value;
+    setFormData((prev) => ({
+      ...prev,
+      type: newType,
+      endpoints: prev.endpoints.map((endpoint) => ({
+        ...endpoint,
+        // Different defaults based on type
+        ...(newType === "API" && {
+          apiName: endpoint.apiName || "",
+          httpType: endpoint.httpType || "GET",
+          header: endpoint.header || false,
+          description: endpoint.description || "",
+          source: endpoint.source || "",
+          destination: endpoint.destination || "",
+          portNo: endpoint.portNo || "",
+          apiUrl: endpoint.apiUrl || "",
+          dnsName: endpoint.dnsName || "",
+        }),
+        ...(newType === "UI" && {
+          appUrl: endpoint.appUrl || "",
+        }),
+        ...(newType === "Integration" && {
+          source: endpoint.source || "",
+          destination: endpoint.destination || "",
+          portNo: endpoint.portNo || "",
+          appUrl: endpoint.appUrl || "",
+          dnsName: endpoint.dnsName || "",
+        }),
+      })),
+    }));
+  };
 
   const handleSelectChange = (e) => {
     const { name, value } = e.target;
@@ -96,7 +232,11 @@ const CreatePage = () => {
 
   const handleChange = (e, index, field) => {
     const updatedEndpoints = [...formData.endpoints];
-    updatedEndpoints[index][field] = e.target.value;
+
+    // Handle checkbox for header field
+    const value = field === "header" ? e.target.checked : e.target.value;
+    updatedEndpoints[index][field] = value;
+
     setFormData({ ...formData, endpoints: updatedEndpoints });
   };
 
@@ -105,19 +245,35 @@ const CreatePage = () => {
   };
 
   const addEndpoint = () => {
+    // Create a new endpoint with the appropriate fields based on current type
+    const newEndpoint = {
+      // Include the default fields for the current type
+      ...(formData.type === "API" && {
+        apiName: "",
+        httpType: "GET",
+        header: false,
+        description: "",
+        source: "",
+        destination: "",
+        portNo: "",
+        apiUrl: "",
+        dnsName: "",
+      }),
+      ...(formData.type === "UI" && {
+        appUrl: "",
+      }),
+      ...(formData.type === "Integration" && {
+        source: "",
+        destination: "",
+        portNo: "",
+        appUrl: "",
+        dnsName: "",
+      }),
+    };
+
     setFormData({
       ...formData,
-      endpoints: [
-        ...formData.endpoints,
-        {
-          environment: "",
-          source: "",
-          destination: "",
-          portNo: "",
-          appUrl: "",
-          dnsName: "",
-        },
-      ],
+      endpoints: [...formData.endpoints, newEndpoint],
     });
   };
 
@@ -126,45 +282,181 @@ const CreatePage = () => {
     setFormData({ ...formData, endpoints: updatedEndpoints });
   };
 
+  const removeExistingAttachment = (index) => {
+    if (isEditMode) {
+      const updatedAttachments = [...formData.existingAttachments];
+      updatedAttachments.splice(index, 1);
+      setFormData({ ...formData, existingAttachments: updatedAttachments });
+    }
+  };
+
+  const handleDownload = async (file) => {
+    try {
+      const response = await fetch(`/${file}`, { method: "GET" });
+      if (!response.ok) {
+        throw new Error("Failed to download file");
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, "_blank");
+    } catch (error) {
+      console.error("Download error:", error);
+      setError("Failed to download file");
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
     try {
+      // Validate that all required fields are present based on type
+      const requiredFields = getRequiredFields(formData.type);
+
+      for (let index = 0; index < formData.endpoints.length; index++) {
+        const endpoint = formData.endpoints[index];
+        for (const field of requiredFields) {
+          if (!endpoint[field] && field !== "header") {
+            // header is a boolean, can be false
+            throw new Error(
+              `Endpoint ${index + 1} is missing required field: ${field}`
+            );
+          }
+        }
+        if(formData.type === "API" && endpoint.header) {
+          if (!endpoint.apiName) {
+            throw new Error(
+              `Endpoint ${index + 1} is missing required field: apiName`
+            );
+          }
+          if (!endpoint.description) {
+            throw new Error(
+              `Endpoint ${index + 1} is missing required field: description`
+            );
+          }
+        }
+      }
+
       const formDataToSend = new FormData();
 
-      Object.keys(formData).forEach((key) => {
-        if (key !== "endpoints" && key !== "attachments") {
-          formDataToSend.append(key, formData[key]);
+      // Add non-endpoint data
+      formDataToSend.append("type", formData.type);
+      formDataToSend.append("environment", formData.environment);
+      formDataToSend.append("application", formData.application);
+      formDataToSend.append("project", formData.project);
+      formDataToSend.append("apiDescription", formData.apiDescription);
+      formDataToSend.append(
+        "applicationDescription",
+        formData.applicationDescription
+      );
+      formDataToSend.append("request", formData.request);
+      formDataToSend.append("response", formData.response);
+
+      // Add only the fields relevant to the selected type for each endpoint
+      formData.endpoints.forEach((endpoint, index) => {
+
+        if (formData.type === "API") {
+          formDataToSend.append(
+            `endpoints[${index}][httpType]`,
+            endpoint.httpType || "GET"
+          );
+          formDataToSend.append(
+            `endpoints[${index}][header]`,
+            endpoint.header || false
+          );
+          formDataToSend.append(
+            `endpoints[${index}][source]`,
+            endpoint.source || ""
+          );
+          formDataToSend.append(
+            `endpoints[${index}][destination]`,
+            endpoint.destination || ""
+          );
+          formDataToSend.append(
+            `endpoints[${index}][portNo]`,
+            endpoint.portNo || ""
+          );
+          formDataToSend.append(
+            `endpoints[${index}][apiUrl]`,
+            endpoint.apiUrl || ""
+          );
+          formDataToSend.append(
+            `endpoints[${index}][dnsName]`,
+            endpoint.dnsName || ""
+          );
+          if (endpoint.header) {
+            formDataToSend.append(
+              `endpoints[${index}][apiName]`,
+              endpoint.apiName || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][description]`,
+              endpoint.description || ""
+            );
+          }
+        } else if (formData.type === "UI") {
+          formDataToSend.append(
+            `endpoints[${index}][appUrl]`,
+            endpoint.appUrl || ""
+          );
+        } else if (formData.type === "Integration") {
+          formDataToSend.append(
+            `endpoints[${index}][source]`,
+            endpoint.source || ""
+          );
+          formDataToSend.append(
+            `endpoints[${index}][destination]`,
+            endpoint.destination || ""
+          );
+          formDataToSend.append(
+            `endpoints[${index}][portNo]`,
+            endpoint.portNo || ""
+          );
+          formDataToSend.append(
+            `endpoints[${index}][appUrl]`,
+            endpoint.appUrl || ""
+          );
+          formDataToSend.append(
+            `endpoints[${index}][dnsName]`,
+            endpoint.dnsName || ""
+          );
         }
       });
 
-      formData.endpoints.forEach((endpoint, index) => {
-        Object.keys(endpoint).forEach((field) => {
-          formDataToSend.append(
-            `endpoints[${index}][${field}]`,
-            endpoint[field]
-          );
+      // If in edit mode, include existing attachments
+      if (isEditMode) {
+        formData.existingAttachments.forEach((attachment, index) => {
+          formDataToSend.append(`existingAttachments[${index}]`, attachment);
         });
-      });
+      }
 
-      // Append multiple files
+      // Add new attachments
       formData.attachments.forEach((file) => {
         formDataToSend.append("attachments", file);
       });
 
-      console.log("formDataToSend", formDataToSend);
-      const response = await axios.post("/api/apis", formDataToSend, {
-        headers: { "Content-Type": "multipart/form-data" },
-        withCredentials: true,
-      });
+      // Use different API endpoints for create vs edit
+      if (isEditMode) {
+        await axios.put(`/api/apis/${id}`, formDataToSend, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        });
+        alert("API Updated Successfully!");
+      } else {
+        await axios.post("/api/apis", formDataToSend, {
+          headers: { "Content-Type": "multipart/form-data" },
+          withCredentials: true,
+        });
+        alert("API Created Successfully!");
+      }
 
-      alert("API Created Successfully!");
-      navigate("/");
+      navigate("/search-api");
     } catch (err) {
-      let errorMessage = "Failed to create API";
-      if (err.response && err.response.data) {
+      let errorMessage = `Failed to ${isEditMode ? "update" : "create"} API`;
+      if (err.message && !err.response) {
+        errorMessage = err.message;
+      } else if (err.response && err.response.data) {
         errorMessage = err.response.data.message || errorMessage;
       }
       setError(errorMessage);
@@ -173,12 +465,179 @@ const CreatePage = () => {
     }
   };
 
+  // Render endpoint fields based on selected type
+  const renderEndpointFields = (endpoint, index) => {
+    switch (formData.type) {
+      case "API":
+        return (
+          <>
+            <select
+              value={endpoint.httpType || "GET"}
+              onChange={(e) => handleChange(e, index, "httpType")}
+              required
+            >
+              {httpTypeOptions.map((type) => (
+                <option key={type.val} value={type.val}>
+                  {type.name}
+                </option>
+              ))}
+            </select>
+
+            <input
+              type="text"
+              placeholder="Source"
+              value={endpoint.source || ""}
+              onChange={(e) => handleChange(e, index, "source")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Destination"
+              value={endpoint.destination || ""}
+              onChange={(e) => handleChange(e, index, "destination")}
+              required
+            />
+            <input
+              type="number"
+              placeholder="Port Number"
+              value={endpoint.portNo || ""}
+              onChange={(e) => handleChange(e, index, "portNo")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="API URL"
+              value={endpoint.apiUrl || ""}
+              onChange={(e) => handleChange(e, index, "apiUrl")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="DNS Name"
+              value={endpoint.dnsName || ""}
+              onChange={(e) => handleChange(e, index, "dnsName")}
+              required
+            />
+            <div className={styles.checkboxContainer}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={endpoint.header || false}
+                  onChange={(e) => handleChange(e, index, "header")}
+                />
+                Header
+              </label>
+            </div>
+            {endpoint.header && (
+              <>
+                <input
+                  type="text"
+                  placeholder="API Name"
+                  value={endpoint.apiName || ""}
+                  onChange={(e) => handleChange(e, index, "apiName")}
+                  required
+                />
+                <input
+                  placeholder="Description"
+                  value={endpoint.description || ""}
+                  onChange={(e) => handleChange(e, index, "description")}
+                  required
+                />
+              </>
+            )}
+          </>
+        );
+      case "UI":
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="App URL"
+              value={endpoint.appUrl || ""}
+              onChange={(e) => handleChange(e, index, "appUrl")}
+              required
+            />
+          </>
+        );
+      case "Integration":
+      default:
+        return (
+          <>
+            <input
+              type="text"
+              placeholder="Source"
+              value={endpoint.source || ""}
+              onChange={(e) => handleChange(e, index, "source")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Destination"
+              value={endpoint.destination || ""}
+              onChange={(e) => handleChange(e, index, "destination")}
+              required
+            />
+            <input
+              type="number"
+              placeholder="Port Number"
+              value={endpoint.portNo || ""}
+              onChange={(e) => handleChange(e, index, "portNo")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="App URL"
+              value={endpoint.appUrl || ""}
+              onChange={(e) => handleChange(e, index, "appUrl")}
+              required
+            />
+            <input
+              type="text"
+              placeholder="DNS Name"
+              value={endpoint.dnsName || ""}
+              onChange={(e) => handleChange(e, index, "dnsName")}
+              required
+            />
+          </>
+        );
+    }
+  };
+
   return (
     <div className={styles.container}>
-      <h2>Create API</h2>
+      <h2>{isEditMode ? "Edit API" : "Create API"}</h2>
       {error && <p className={styles.error}>{error}</p>}
+      {loading && <p className={styles.loading}>Loading data...</p>}
+
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.dataRow}>
+          <select
+            name="type"
+            value={formData.type}
+            onChange={handleTypeChange}
+            required
+            className={styles.select}
+          >
+            {apiTypeOptions.map((option) => (
+              <option key={option.val} value={option.val}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+          <select
+            name="environment"
+            className={styles.select}
+            value={formData.environment}
+            onChange={handleSelectChange}
+            required
+          >
+            <option value="">Select Environment</option>
+            {envOptions.map((env) => (
+              <option key={env.val} value={env.val}>
+                {env.name}
+              </option>
+            ))}
+          </select>
           <select
             name="project"
             value={formData.project}
@@ -206,75 +665,33 @@ const CreatePage = () => {
             ))}
           </select>
         </div>
-        {/* <input
-          type="text"
-          name="applicationName"
-          placeholder="Application Name"
-          value={formData.applicationName}
-          onChange={(e) =>
-            setFormData({ ...formData, applicationName: e.target.value })
-          }
-          required
-        /> */}
 
         {formData.endpoints.map((endpoint, index) => (
-          <div key={index} className={styles.endpointRow}>
-            <select
-              value={endpoint.environment}
-              onChange={(e) => handleChange(e, index, "environment")}
-              required
-            >
-              <option value="">Select Environment</option>
-              {envOptions.map((env) => (
-                <option key={env.val} value={env.val}>
-                  {env.name}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              placeholder="Source"
-              value={endpoint.source}
-              onChange={(e) => handleChange(e, index, "source")}
-              required
-            />
-            <input
-              type="text"
-              placeholder="Destination"
-              value={endpoint.destination}
-              onChange={(e) => handleChange(e, index, "destination")}
-              required
-            />
-            <input
-              type="number"
-              placeholder="Port Number"
-              value={endpoint.portNo}
-              onChange={(e) => handleChange(e, index, "portNo")}
-              required
-            />
-            <input
-              type="text"
-              placeholder="App URL"
-              value={endpoint.appUrl}
-              onChange={(e) => handleChange(e, index, "appUrl")}
-              required
-            />
-            <input
-              type="text"
-              placeholder="DNS Name"
-              value={endpoint.dnsName}
-              onChange={(e) => handleChange(e, index, "dnsName")}
-              required
-            />
+          <div
+            key={index}
+            className={`${styles.endpointRow} ${
+              formData.type === "API"
+                ? styles.apiEndpointRow
+                : formData.type === "UI"
+                ? styles.uiEndpointRow
+                : styles.integrationEndpointRow
+            }`}
+          >
+            {renderEndpointFields(endpoint, index)}
             <button type="button" onClick={() => removeEndpoint(index)}>
               Remove
             </button>
           </div>
         ))}
 
-        <button type="button" onClick={addEndpoint}>
+        <button
+          type="button"
+          onClick={addEndpoint}
+          className={styles.addButton}
+        >
           Add Endpoint
         </button>
+
         <div className={styles.descRow}>
           <textarea
             name="apiDescription"
@@ -298,7 +715,7 @@ const CreatePage = () => {
           ></textarea>
         </div>
 
-        <div className={styles.dataRow}>
+        <div className={styles.descRow}>
           <textarea
             name="request"
             placeholder="Request Data"
@@ -320,16 +737,77 @@ const CreatePage = () => {
           ></textarea>
         </div>
 
-        <input
-          type="file"
-          name="attachment"
-          accept="*"
-          multiple
-          onChange={handleFileChange}
-        />
+        {/* Show existing attachments in edit mode */}
+        {isEditMode && formData.existingAttachments.length > 0 && (
+          <div className={styles.attachmentsSection}>
+            <h3>Existing Attachments</h3>
+            <div className={styles.attachmentsGrid}>
+              {formData.existingAttachments.map((file, index) => (
+                <div key={index} className={styles.attachmentItem}>
+                  {file.match(/\.(jpeg|jpg|png|gif)$/i) ? (
+                    <div onClick={() => handleDownload(file)}>
+                      <img
+                        src={`/${file}`}
+                        alt="Attachment"
+                        className={styles.attachmentImage}
+                      />
+                      <p>{file.split("/").pop()}</p>
+                    </div>
+                  ) : (
+                    <div onClick={() => handleDownload(file)}>
+                      <FaFileAlt className={styles.fileIcon} />
+                      <div className={styles.downloadLink}>
+                        {file.split("/").pop()}
+                      </div>
+                    </div>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => removeExistingAttachment(index)}
+                    className={styles.removeButton}
+                  >
+                    <FaTrash />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
-        <button type="submit" disabled={loading}>
-          {loading ? "Creating..." : "Create API"}
+        <div className={styles.fileUploadSection}>
+          <h3>{isEditMode ? "Add New Attachments" : "Attachments"}</h3>
+          <input
+            type="file"
+            name="attachment"
+            accept="*"
+            multiple
+            onChange={handleFileChange}
+          />
+          {formData.attachments.length > 0 && (
+            <div className={styles.newAttachments}>
+              <h4>Files to Upload:</h4>
+              {formData.attachments.map((file, index) => (
+                <div key={index} className={styles.newAttachmentItem}>
+                  <FaFileAlt className={styles.fileIcon} />
+                  <span>{file.name}</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={loading}
+          className={styles.submitButton}
+        >
+          {loading
+            ? isEditMode
+              ? "Updating..."
+              : "Creating..."
+            : isEditMode
+            ? "Update API"
+            : "Create API"}
         </button>
       </form>
     </div>

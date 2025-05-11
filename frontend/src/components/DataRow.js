@@ -81,9 +81,33 @@ const DataRow = ({ api, index = "", onEdit, onDelete }) => {
     );
   };
 
+  // Get badge class based on API type
+  const getTypeBadgeClass = () => {
+    switch (api.type) {
+      case "API":
+        return styles.typeBadgeApi;
+      case "UI":
+        return styles.typeBadgeUi;
+      case "Integration":
+        return styles.typeBadgeIntegration;
+      default:
+        return styles.typeBadgeIntegration;
+    }
+  };
+
+  const handleEditClick = () => {
+    onEdit(api);
+  };
+
   return (
     <tr>
       <td>{index}</td>
+      <td>
+        <span className={`${styles.typeBadge} ${getTypeBadgeClass()}`}>
+          {api.type || "Integration"}
+        </span>
+      </td>
+      <td>{api.environment || "N/A"}</td>
       <td>{api.application?.appName}</td>
       <td>{api.project?.name}</td>
       <td>{api.applicationDescription}</td>
@@ -119,7 +143,7 @@ const DataRow = ({ api, index = "", onEdit, onDelete }) => {
         </button>
       </td>
       <td className={styles.actionButtons}>
-        <button className={styles.editButton} onClick={() => onEdit(api)}>
+        <button className={styles.editButton} onClick={handleEditClick}>
           <FaEdit />
         </button>
         <button className={styles.deleteButton} onClick={handleDeleteClick}>

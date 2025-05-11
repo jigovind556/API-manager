@@ -6,6 +6,8 @@ const { asyncHandler } = require("../utils/asyncHandler");
 
 const createApi = asyncHandler(async (req, res) => {
   const {
+    type,
+    environment,
     application,
     project,
     apiDescription,
@@ -14,7 +16,7 @@ const createApi = asyncHandler(async (req, res) => {
     response,
   } = req.body;
 
-    const attachment = req.files ? req.files.map((file) => file.path) : [];
+  const attachment = req.files ? req.files.map((file) => file.path) : [];
   const createdBy = req.user._id;
 
   const endpoints = req.body.endpoints;
@@ -24,35 +26,68 @@ const createApi = asyncHandler(async (req, res) => {
   }
 
   // Check for missing fields
-  if (!application || !project || !request || !response) {
+  if (!type || !environment || !application || !project || !request || !response) {
     throw new ApiError(400, "All required fields must be provided");
   }
 
-  const requiredFields = [
-    "environment",
-    "source",
-    "destination",
-    "portNo",
-    "appUrl",
-    "dnsName",
-  ];
-  for (const endpoint of endpoints) {
-    for (const field of requiredFields) {
-      if (!endpoint[field]) {
-        throw new ApiError(
-          400,
-          `Missing field '${field}' in one of the endpoints`
-        );
-      }
+  // Determine required fields based on API type
+  let requiredFields;
+  switch (type) {
+    case "API":
+    requiredFields = [
+        "httpType",
+        "source",
+        "destination",
+        "portNo",
+        "apiUrl",
+        "dnsName",
+        "header",
+      ];
+      break;
+    case "UI":
+      requiredFields = [ "appUrl"];
+      break;
+    case "Integration":
+    default:
+      requiredFields = [
+        "source",
+        "destination",
+        "portNo",
+        "appUrl",
+        "dnsName",
+      ];
+  }
+
+for (const endpoint of endpoints) {
+  for (const field of requiredFields) {
+    // Skip header field as it's a boolean and can be false
+    if (
+      field !== "header" &&
+      (endpoint[field] === undefined ||
+        endpoint[field] === null ||
+        endpoint[field] === "")
+    ) {
+      throw new ApiError(
+        400,
+        `Missing field '${field}' in one of the endpoints`
+      );
     }
   }
 
-  // const existingApi = await API.findOne({ applicationName });
-  // if (existingApi) {
-  //   throw new ApiError(409, "API with this URL already exists");
-  // }
+  // Additional check: If type is API and header is true, apiName and description must be present
+  if (type === "API" && endpoint.header === true) {
+    if (!endpoint.apiName || !endpoint.description) {
+      throw new ApiError(
+        400,
+        "Fields 'apiName' and 'description' are required when 'header' is true in type 'API'"
+      );
+    }
+  }
+}
 
   const api = await API.create({
+    type,
+    environment,
     application,
     project,
     endpoints,

@@ -6,10 +6,6 @@ import CreatePage from "./pages/CreatePage";
 import SearchPage from "./pages/SearchPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
-import EditPage from "./pages/EditPage";
-import CreateApplication from "./pages/CreateApplication";
-import ApplicationsList from "./pages/ApplicationsList";
-import EditApplication from "./pages/EditApplication";
 import { MyProvider } from "./context/MyContext";
 import ApiChangeHistory from "./pages/ApiChangeHistory";
 import { ModalProvider } from "./context/ModalContext";
@@ -59,18 +55,10 @@ function App() {
                 }
               />
               <Route
-                path="/create-application"
+                path="/edit/:id"
                 element={
                   <Layout>
-                    <CreateApplication />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/applications-search"
-                element={
-                  <Layout>
-                    <ApplicationsList />
+                    <CreatePage />
                   </Layout>
                 }
               />
@@ -79,22 +67,6 @@ function App() {
                 element={
                   <Layout>
                     <SearchPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/edit/:id"
-                element={
-                  <Layout>
-                    <EditPage />
-                  </Layout>
-                }
-              />
-              <Route
-                path="/edit-application/:id"
-                element={
-                  <Layout>
-                    <EditApplication />
                   </Layout>
                 }
               />

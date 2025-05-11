@@ -4,7 +4,7 @@ h2{
 
 }
 .container {
-  max-width: 1000px;
+  /* max-width: 1000px; */
   margin: auto;
   padding: 20px;
 }
@@ -50,9 +50,40 @@ h2{
   background-color: #28a745;
 }
 
+/* API Type Badge Styles */
+.typeBadge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+  text-align: center;
+  min-width: 80px;
+}
+
+.typeBadgeApi {
+  background-color: #3498db;
+}
+
+.typeBadgeUi {
+  background-color: #9b59b6;
+}
+
+.typeBadgeIntegration {
+  background-color: #f39c12;
+}
+
+/* Additional styles for the API Type columns */
+.apiTable th:nth-child(2), 
+.apiTable td:nth-child(2) {
+  text-align: center;
+  min-width: 100px;
+}
+
 .actionButtons {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  gap: 2px;
 }
 
 .editButton, .deleteButton {
@@ -198,4 +229,25 @@ h2{
   word-wrap: break-word;
   max-height: 300px;
   overflow-y: auto;
+}
+
+/* Existing code for the view buttons */
+.viewButton {
+  display: block;
+  margin: 5px 0;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  padding: 5px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.viewButton:hover {
+  background-color: #218838;
 }

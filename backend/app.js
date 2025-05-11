@@ -24,6 +24,9 @@ const applicationRouter = require("./routes/application.routes");
 
 
 // routes declaration
+app.get("/", (req, res) => {
+  res.send("Welcome to the API");
+});
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/api/users", userRouter);
 app.use("/api/apis", apiRouter);

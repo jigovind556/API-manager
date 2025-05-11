@@ -10,36 +10,16 @@ import { useMyContext } from "../context/MyContext";
 const SearchPage = () => {
   const navigate = useNavigate();
   const [apis, setApis] = useState([]);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQueries, setSearchQueries] = useState({
+    application: "",
+    project: "",
+    environment: ""
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // const [expanded, setExpanded] = useState(false);
   const {theme, toggleTheme} = useMyContext();
-  // const ExpandMore = styled((props)=>{
-  //   const {expand, ...other} = props;
-  //   return <IconButton {...other}/>;
-  // })(({theme})=>({
-  //   marginLeft: 'auto',
-  //   transition:theme.transitions.create('transform',{
-  //     duration: theme.transitions.duration.shortest,
-  //   }),
-  //   variants: [
-  //     {
-  //       props: ({expand}) => !expand,
-  //       style: {
-  //         transform: 'rotate(0deg)',
-  //       },
-  //     },
-  //     {
-  //       props: ({expand}) => expand,
-  //       style: {
-  //         transform: 'rotate(180deg)',
-  //       },
-  //     }
-  //   ],
-  // }));
-
+  
   useEffect(() => {
     const fetchApis = async () => {
       try {
@@ -71,9 +51,20 @@ const SearchPage = () => {
     }
   };
 
-  const filteredApis = apis.filter((api) =>
-    api.application?.appName?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleSearchChange = (field, value) => {
+    setSearchQueries(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const filteredApis = apis.filter((api) => {
+    const applicationMatch = api.application?.appName?.toLowerCase().includes(searchQueries.application.toLowerCase());
+    const projectMatch = api.project?.name?.toLowerCase().includes(searchQueries.project.toLowerCase());
+    const environmentMatch = api.environment?.toLowerCase().includes(searchQueries.environment.toLowerCase());
+    
+    return applicationMatch && projectMatch && environmentMatch;
+  });
 
   return (
     <div
@@ -84,17 +75,39 @@ const SearchPage = () => {
       }}
     >
       <h2>Search APIs</h2>
-      <div className={styles.searchBox}>
-        <input
-          type="text"
-          placeholder="Search by Application Name..."
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          className={styles.searchInput}
-        />
-        <button className={styles.searchButton}>
-          <FaSearch />
-        </button>
+      <div className={styles.searchContainer}>
+        <div className={styles.searchBox}>
+          <input
+            type="text"
+            placeholder="Search by Application Name..."
+            value={searchQueries.application}
+            onChange={(e) => handleSearchChange("application", e.target.value)}
+            className={styles.searchInput}
+          />
+          <FaSearch className={styles.searchIcon} />
+        </div>
+        
+        <div className={styles.searchBox}>
+          <input
+            type="text"
+            placeholder="Search by Project Name..."
+            value={searchQueries.project}
+            onChange={(e) => handleSearchChange("project", e.target.value)}
+            className={styles.searchInput}
+          />
+          <FaSearch className={styles.searchIcon} />
+        </div>
+        
+        <div className={styles.searchBox}>
+          <input
+            type="text"
+            placeholder="Search by Environment..."
+            value={searchQueries.environment}
+            onChange={(e) => handleSearchChange("environment", e.target.value)}
+            className={styles.searchInput}
+          />
+          <FaSearch className={styles.searchIcon} />
+        </div>
       </div>
 
       {loading && <p>Loading...</p>}
@@ -104,6 +117,8 @@ const SearchPage = () => {
         <thead>
           <tr>
             <th>#</th>
+            <th>Type</th>
+            <th>Environment</th>
             <th>Application Name</th>
             <th>Project Name</th>
             <th>Application desc</th>
@@ -127,7 +142,7 @@ const SearchPage = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="9">No APIs found</td>
+              <td colSpan="11">No APIs found</td>
             </tr>
           )}
         </tbody>
