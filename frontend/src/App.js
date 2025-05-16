@@ -9,6 +9,8 @@ import RegisterPage from "./pages/RegisterPage";
 import { MyProvider } from "./context/MyContext";
 import ApiChangeHistory from "./pages/ApiChangeHistory";
 import { ModalProvider } from "./context/ModalContext";
+import CreateApplication from "./pages/CreateApplication";
+import ApplicationsList from "./pages/ApplicationsList";
 
 function App() {
   return (
@@ -67,6 +69,22 @@ function App() {
                 element={
                   <Layout>
                     <SearchPage />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/create-application"
+                element={
+                  <Layout>
+                    <CreateApplication />
+                  </Layout>
+                }
+              />
+              <Route
+                path="/applications-search"
+                element={
+                  <Layout>
+                    <ApplicationsList />
                   </Layout>
                 }
               />

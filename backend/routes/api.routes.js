@@ -7,6 +7,7 @@ const {
   updateApi,
   deleteApi,
   getApiHistory,
+  getApisByApplication,
 } = require("../controllers/api.controller");
 const { verifyJWT } = require("../middlewares/auth.middleware");
 const { upload } = require("../middlewares/upload.middleware");
@@ -20,6 +21,8 @@ router
 
 router.route("/history/:id").get(verifyJWT, getApiHistory);
 router.route("/history").get(verifyJWT, getApiHistory);
+
+router.get("/application/:applicationId", getApisByApplication);
 
 router
   .route("/:id")

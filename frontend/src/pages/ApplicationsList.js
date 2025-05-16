@@ -10,6 +10,11 @@ const ApplicationsList = () => {
   const [filteredApplications, setFilteredApplications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [expandedRowId, setExpandedRowId] = useState(null);
+
+  const toggleExpand = (id) => {
+    setExpandedRowId((prevId) => (prevId === id ? null : id));
+  };
 
   useEffect(() => {
     const fetchApplications = async () => {
@@ -85,6 +90,8 @@ const ApplicationsList = () => {
                 api={app}
                 index={index + 1}
                 onStatusChange={handleStatusChange}
+                isExpanded={expandedRowId === app._id}
+                onExpandToggle={toggleExpand}
               />
             ))
           ) : (

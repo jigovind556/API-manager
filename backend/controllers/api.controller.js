@@ -129,6 +129,31 @@ const getApiById = asyncHandler(async (req, res) => {
   res.status(200).json(new ApiResponse(200, api, "API retrieved successfully"));
 });
 
+
+const getApisByApplication = asyncHandler(async (req, res) => {
+  const { applicationId } = req.params;
+
+  if (!applicationId) {
+    return res
+      .status(400)
+      .json(new ApiResponse(400, null, "Application ID is required"));
+  }
+
+  const apis = await API.find({ application: applicationId })
+    .populate("project", "_id name")
+    .populate("application", "_id appName")
+    .populate("createdBy", "_id name username")
+    .populate("updatedBy", "_id name username")
+    .sort({ createdAt: -1 });
+
+  res
+    .status(200)
+    .json(
+      new ApiResponse(200, apis, "APIs for application retrieved successfully")
+    );
+});
+
+
 const findChanges = (oldObj, newObj, parentKey = "") => {
   let changes = {};
 
@@ -365,6 +390,7 @@ module.exports = {
   createApi,
   getAllApis,
   getApiById,
+  getApisByApplication,
   updateApi,
   deleteApi,
   getApiHistory,

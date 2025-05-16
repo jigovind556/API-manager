@@ -67,58 +67,28 @@ const getAllApplications = asyncHandler(async (req, res) => {
     {
       $unwind: { path: "$projectname", preserveNullAndEmptyArrays: true },
     },
-    // {
-    //   $addFields: {
-    //     projectName: "$projectname.name",
-    //     appName: { $ifNull: ["$appName", ""] },
-    //     applicationName: { $ifNull: ["$applicationName", ""] },
-    //     applicationDescription: {
-    //       $ifNull: ["$applicationDescription", "N/A"],
-    //     },
-    //   },
-    // },
     {
       $unwind: { path: "$createdBy", preserveNullAndEmptyArrays: true },
     },
     {
       $unwind: { path: "$updatedBy", preserveNullAndEmptyArrays: true },
     },
+    // NEW: Count number of APIs associated with each application
     {
       $lookup: {
-        from: "applications",
-        let: {
-          appNameValue: "$appName",
-          projectnameValue: "$applicationName",
-        },
+        from: "apis",
+        let: { applicationId: "$_id" },
         pipeline: [
-          { $match: { $expr: { $eq: ["$appName", "$$appNameValue"] } } },
-          { $count: "count" },
+          { $match: { $expr: { $eq: ["$application", "$$applicationId"] } } },
+          { $count: "apiCount" },
         ],
-        as: "count_apps",
+        as: "api_count_data",
       },
     },
-    // {
-    //   $lookup: {
-    //     from: "applications",
-    //     let: { projectnameValue: "$projectname.name" },
-    //     pipeline: [
-    //       {
-    //         $match: {
-    //           $expr: { $eq: ["$projectname.name", "$$projectnameValue"] },
-    //         },
-    //       },
-    //       { $count: "count" },
-    //     ],
-    //     as: "count_projects",
-    //   },
-    // },
     {
       $addFields: {
-        // count_projects: {
-        //   $ifNull: [{ $arrayElemAt: ["$count_projects.count", 0] }, 0],
-        // },
-        count_apps: {
-          $ifNull: [{ $arrayElemAt: ["$count_apps.count", 0] }, 0],
+        apiCount: {
+          $ifNull: [{ $arrayElemAt: ["$api_count_data.apiCount", 0] }, 0],
         },
       },
     },
@@ -131,6 +101,7 @@ const getAllApplications = asyncHandler(async (req, res) => {
       new ApiResponse(200, applications, "Applications retrieved successfully")
     );
 });
+
 
 const getApplicationList = asyncHandler(async (req, res) => {
   const applications = await Application.find()
