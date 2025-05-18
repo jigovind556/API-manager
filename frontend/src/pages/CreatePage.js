@@ -36,6 +36,7 @@ const CreatePage = () => {
 
   // Initial form data structure
   const initialFormData = {
+    name: "",
     type: "Integration",
     environment: "",
     application: "--select-application--",
@@ -127,6 +128,7 @@ const CreatePage = () => {
           const apiType = apiData.type || "Integration";
 
           setFormData({
+            name: apiData.name || "",
             type: apiType,
             application: apiData.application._id || "--select-application--",
             project: apiData.project._id || "--select-project--",
@@ -341,6 +343,7 @@ const CreatePage = () => {
       const formDataToSend = new FormData();
 
       // Add non-endpoint data
+      formDataToSend.append("name", formData.name);
       formDataToSend.append("type", formData.type);
       formDataToSend.append("environment", formData.environment);
       formDataToSend.append("application", formData.application);
@@ -611,6 +614,15 @@ const CreatePage = () => {
 
       <form onSubmit={handleSubmit} className={styles.form}>
         <div className={styles.dataRow}>
+          <input
+            type="text"
+            name="name"
+            placeholder="API Name"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            required
+            className={styles.textInput}
+          />
           <select
             name="type"
             value={formData.type}

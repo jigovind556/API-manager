@@ -102,6 +102,7 @@ const DataRow = ({ api, index = "", onEdit, onDelete }) => {
   return (
     <tr>
       <td>{index}</td>
+      <td>{api.name}</td>
       <td>
         <span className={`${styles.typeBadge} ${getTypeBadgeClass()}`}>
           {api.type || "Integration"}

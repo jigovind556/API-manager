@@ -11,6 +11,7 @@ const SearchPage = () => {
   const navigate = useNavigate();
   const [apis, setApis] = useState([]);
   const [searchQueries, setSearchQueries] = useState({
+    name: "",
     application: "",
     project: "",
     environment: ""
@@ -59,11 +60,12 @@ const SearchPage = () => {
   };
 
   const filteredApis = apis.filter((api) => {
+    const nameMatch = api.name?.toLowerCase().includes(searchQueries.name.toLowerCase());
     const applicationMatch = api.application?.appName?.toLowerCase().includes(searchQueries.application.toLowerCase());
     const projectMatch = api.project?.name?.toLowerCase().includes(searchQueries.project.toLowerCase());
     const environmentMatch = api.environment?.toLowerCase().includes(searchQueries.environment.toLowerCase());
     
-    return applicationMatch && projectMatch && environmentMatch;
+    return nameMatch && applicationMatch && projectMatch && environmentMatch;
   });
 
   return (
@@ -76,6 +78,17 @@ const SearchPage = () => {
     >
       <h2>Search APIs</h2>
       <div className={styles.searchContainer}>
+        <div className={styles.searchBox}>
+          <input
+            type="text"
+            placeholder="Search by API Name..."
+            value={searchQueries.name}
+            onChange={(e) => handleSearchChange("name", e.target.value)}
+            className={styles.searchInput}
+          />
+          <FaSearch className={styles.searchIcon} />
+        </div>
+        
         <div className={styles.searchBox}>
           <input
             type="text"
@@ -117,6 +130,7 @@ const SearchPage = () => {
         <thead>
           <tr>
             <th>#</th>
+            <th>Name</th>
             <th>Type</th>
             <th>Environment</th>
             <th>Application Name</th>
@@ -142,7 +156,7 @@ const SearchPage = () => {
             ))
           ) : (
             <tr>
-              <td colSpan="11">No APIs found</td>
+              <td colSpan="12">No APIs found</td>
             </tr>
           )}
         </tbody>

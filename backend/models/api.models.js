@@ -47,6 +47,11 @@ const endpointSchema = new mongoose.Schema({
 // Main API schema
 const apiSchema = new mongoose.Schema(
   {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     environment: {
       type: String,
       required: true,

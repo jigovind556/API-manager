@@ -52,6 +52,9 @@ const ApplicationDataRow = ({ api, index, onStatusChange, isExpanded, onExpandTo
                     Application Name
                   </th>
                   <th style={{ padding: "8px", border: "1px solid #ccc" }}>
+                    Api Name
+                  </th>
+                  <th style={{ padding: "8px", border: "1px solid #ccc" }}>
                     Project
                   </th>
                   <th style={{ padding: "8px", border: "1px solid #ccc" }}>
@@ -70,6 +73,9 @@ const ApplicationDataRow = ({ api, index, onStatusChange, isExpanded, onExpandTo
                   <tr key={api._id}>
                     <td style={{ padding: "8px", border: "1px solid #ccc" }}>
                       {index + 1}
+                    </td>
+                    <td style={{ padding: "8px", border: "1px solid #ccc" }}>
+                      {api.name || "—"}
                     </td>
                     <td style={{ padding: "8px", border: "1px solid #ccc" }}>
                       {api.application?.appName || "—"}

@@ -6,6 +6,7 @@ const { asyncHandler } = require("../utils/asyncHandler");
 
 const createApi = asyncHandler(async (req, res) => {
   const {
+    name,
     type,
     environment,
     application,
@@ -26,7 +27,7 @@ const createApi = asyncHandler(async (req, res) => {
   }
 
   // Check for missing fields
-  if (!type || !environment || !application || !project || !request || !response) {
+  if (!name || !type || !environment || !application || !project || !request || !response) {
     throw new ApiError(400, "All required fields must be provided");
   }
 
@@ -86,6 +87,7 @@ for (const endpoint of endpoints) {
 }
 
   const api = await API.create({
+    name,
     type,
     environment,
     application,
