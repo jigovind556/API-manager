@@ -22,21 +22,10 @@ const endpointSchema = new mongoose.Schema({
     trim: true,
   },
   // API-specific fields
-  apiName: {
-    type: String,
-    trim: true,
-  },
-  description: {
-    type: String,
-    trim: true,
-  },
   httpType: {
     type: String,
     enum: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     trim: true,
-  },
-  header: {
-    type: Boolean,
   },
   apiUrl: {
     type: String,
@@ -62,6 +51,23 @@ const apiSchema = new mongoose.Schema(
       enum: ["API", "UI", "Integration"],
       required: true,
     },
+    // Added new fields for header data at API level
+    header: {
+      type: Boolean,
+      default: false,
+    },
+    headerFields: [
+      {
+        name: {
+          type: String,
+          trim: true,
+        },
+        description: {
+          type: String,
+          trim: true,
+        },
+      },
+    ],
     application: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Application",
@@ -121,7 +127,6 @@ apiSchema.pre("validate", function (next) {
   if (this.type === "API") {
     requiredFields = [
       "httpType",
-      "header",
       "source",
       "destination",
       "portNo",
@@ -129,15 +134,46 @@ apiSchema.pre("validate", function (next) {
       "dnsName",
     ];
   } else if (this.type === "UI") {
-    requiredFields = ["appUrl",];
+    requiredFields = ["appUrl"];
   } else if (this.type === "Integration") {
-    requiredFields = [
-      "source",
-      "destination",
-      "portNo",
-      "appUrl",
-      "dnsName",
-    ];
+    requiredFields = ["source", "destination", "portNo", "appUrl", "dnsName"];
+  }
+
+  // Header validation - if header is true, validate headerFields for API and Integration types
+  if ((this.type === "API" || this.type === "Integration") && this.header === true) {
+    // Check if headerFields exists and is an array
+    if (
+      !this.headerFields ||
+      !Array.isArray(this.headerFields) ||
+      this.headerFields.length === 0
+    ) {
+      return next(
+        new Error("Header fields are required when header is enabled")
+      );
+    }
+
+    // Validate each header field has name and description
+    for (const [idx, field] of this.headerFields.entries()) {
+      if (!field || typeof field !== "object") {
+        return next(new Error(`Header field at index ${idx} is invalid`));
+      }
+      if (
+        !field.name ||
+        typeof field.name !== "string" ||
+        field.name.trim() === ""
+      ) {
+        return next(new Error(`Header field at index ${idx} is missing name`));
+      }
+      if (
+        !field.description ||
+        typeof field.description !== "string" ||
+        field.description.trim() === ""
+      ) {
+        return next(
+          new Error(`Header field at index ${idx} is missing description`)
+        );
+      }
+    }
   }
 
   const missing = [];
@@ -148,16 +184,6 @@ apiSchema.pre("validate", function (next) {
         missing.push(`endpoints[${idx}].${field}`);
       }
     });
-
-    // Additional conditional fields when header === true for API
-    if (this.type === "API" && ep.header === true) {
-      if (!ep.apiName || ep.apiName.trim() === "") {
-        missing.push(`endpoints[${idx}].apiName`);
-      }
-      if (!ep.description || ep.description.trim() === "") {
-        missing.push(`endpoints[${idx}].description`);
-      }
-    }
   });
 
   if (missing.length > 0) {

@@ -15,6 +15,8 @@ const createApi = asyncHandler(async (req, res) => {
     applicationDescription,
     request,
     response,
+    header,
+    headerFields
   } = req.body;
 
   const attachment = req.files ? req.files.map((file) => file.path) : [];
@@ -35,18 +37,17 @@ const createApi = asyncHandler(async (req, res) => {
   let requiredFields;
   switch (type) {
     case "API":
-    requiredFields = [
+      requiredFields = [
         "httpType",
         "source",
         "destination",
         "portNo",
         "apiUrl",
         "dnsName",
-        "header",
       ];
       break;
     case "UI":
-      requiredFields = [ "appUrl"];
+      requiredFields = ["appUrl"];
       break;
     case "Integration":
     default:
@@ -57,35 +58,65 @@ const createApi = asyncHandler(async (req, res) => {
         "appUrl",
         "dnsName",
       ];
+      break;
   }
-
-for (const endpoint of endpoints) {
-  for (const field of requiredFields) {
-    // Skip header field as it's a boolean and can be false
-    if (
-      field !== "header" &&
-      (endpoint[field] === undefined ||
-        endpoint[field] === null ||
-        endpoint[field] === "")
-    ) {
-      throw new ApiError(
-        400,
-        `Missing field '${field}' in one of the endpoints`
-      );
+      
+  // Validate header fields if header is true for API or Integration types
+  if ((type === "API" || type === "Integration") && header === true) {
+    if (!headerFields || !Array.isArray(headerFields) || headerFields.length === 0) {
+      throw new ApiError(400, "Header fields are required when header is enabled");
+    }
+    
+    // Check each header field has name and description
+    for (const [idx, field] of headerFields.entries()) {
+      if (!field.name || field.name.trim() === "") {
+        throw new ApiError(400, `Header field at index ${idx} is missing name`);
+      }
+      if (!field.description || field.description.trim() === "") {
+        throw new ApiError(400, `Header field at index ${idx} is missing description`);
+      }
     }
   }
 
-  // Additional check: If type is API and header is true, apiName and description must be present
-  if (type === "API" && endpoint.header === true) {
-    if (!endpoint.apiName || !endpoint.description) {
-      throw new ApiError(
-        400,
-        "Fields 'apiName' and 'description' are required when 'header' is true in type 'API'"
-      );
+  for (const endpoint of endpoints) {
+    for (const field of requiredFields) {
+      if (endpoint[field] === undefined || endpoint[field] === null || endpoint[field] === "") {
+        throw new ApiError(400, `Missing field '${field}' in one of the endpoints`);
+      }
     }
   }
-}
 
+  // Process header and headerFields properly
+  let parsedHeaderFields = [];
+  const isHeaderEnabled = header === true || header === "true";
+  
+  if ((type === "API" || type === "Integration") && isHeaderEnabled && headerFields) {
+    try {
+      // If headerFields is a string (from form data), parse it
+      parsedHeaderFields = typeof headerFields === 'string' 
+        ? JSON.parse(headerFields)
+        : headerFields;
+        
+      // Validate the parsed header fields
+      if (!Array.isArray(parsedHeaderFields) || parsedHeaderFields.length === 0) {
+        throw new ApiError(400, "Header fields must be a non-empty array");
+      }
+      
+      // Validate each field has name and description
+      for (const [idx, field] of parsedHeaderFields.entries()) {
+        if (!field.name || field.name.trim() === "") {
+          throw new ApiError(400, `Header field at index ${idx} is missing name`);
+        }
+        if (!field.description || field.description.trim() === "") {
+          throw new ApiError(400, `Header field at index ${idx} is missing description`);
+        }
+      }
+    } catch (err) {
+      if (err instanceof ApiError) throw err;
+      throw new ApiError(400, "Invalid header fields format: " + err.message);
+    }
+  }
+  
   const api = await API.create({
     name,
     type,
@@ -95,6 +126,8 @@ for (const endpoint of endpoints) {
     endpoints,
     apiDescription,
     applicationDescription,
+    header: isHeaderEnabled, 
+    headerFields: isHeaderEnabled ? parsedHeaderFields : [],
     request: JSON.parse(request),
     response: JSON.parse(response),
     attachment,
@@ -284,6 +317,41 @@ const updateApi = asyncHandler(async (req, res) => {
       } catch (err) {
         throw new ApiError(400, "Invalid JSON format for response field");
       }
+    }
+
+    // Handle header fields validation for API type
+    if (updates.type === 'API' && (updates.header === 'true' || updates.header === true)) {
+      let parsedHeaderFields = [];
+      
+      try {
+        // Parse headerFields if it's a string
+        parsedHeaderFields = typeof updates.headerFields === 'string' 
+          ? JSON.parse(updates.headerFields || '[]')
+          : (updates.headerFields || []);
+        
+        if (!Array.isArray(parsedHeaderFields) || parsedHeaderFields.length === 0) {
+          throw new ApiError(400, "Header fields are required when header is enabled");
+        }
+        
+        // Check each header field has name and description
+        for (const [idx, field] of parsedHeaderFields.entries()) {
+          if (!field.name || field.name.trim() === "") {
+            throw new ApiError(400, `Header field at index ${idx} is missing name`);
+          }
+          if (!field.description || field.description.trim() === "") {
+            throw new ApiError(400, `Header field at index ${idx} is missing description`);
+          }
+        }
+        
+        updates.headerFields = parsedHeaderFields;
+        updates.header = true;
+      } catch (err) {
+        if (err instanceof ApiError) throw err;
+        throw new ApiError(400, "Invalid header fields format: " + err.message);
+      }
+    } else {
+      updates.header = updates.header === 'true' || updates.header === true;
+      updates.headerFields = [];
     }
 
     // Handle attachments

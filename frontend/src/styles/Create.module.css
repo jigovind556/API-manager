@@ -236,7 +236,7 @@ button:disabled {
 
 /* API Type specific styling */
 .apiEndpointRow {
-  grid-template-columns: repeat(5 , 1fr) auto ;
+  grid-template-columns: repeat(6 , 1fr) auto ;
   gap: 8px;
 }
 
@@ -330,5 +330,52 @@ button:disabled {
   
   .removeButton {
     grid-column: auto;
+  }
+}
+
+.headerCheckboxSection {
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+  margin: 10px 0;
+}
+
+.headerFieldsSection {
+  width: 100%;
+  margin: 10px 0 20px;
+  padding: 15px;
+  border: 1px solid #4a6356;
+  border-radius: 5px;
+  background-color: rgba(255, 255, 255, 0.05);
+}
+
+.headerFieldsSection h3 {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #f5f5f5;
+  font-size: 18px;
+  text-align: left;
+}
+
+.headerFieldRow {
+  display: grid;
+  grid-template-columns: 1fr 2fr auto;
+  gap: 10px;
+  margin-bottom: 10px;
+  align-items: center;
+}
+
+.noFieldsMessage {
+  color: #ff9999;
+  margin: 10px 0;
+  text-align: left;
+  font-style: italic;
+}
+
+/* Responsive styling for header fields */
+@media (max-width: 768px) {
+  .headerFieldRow {
+    grid-template-columns: 1fr;
+    gap: 8px;
   }
 }

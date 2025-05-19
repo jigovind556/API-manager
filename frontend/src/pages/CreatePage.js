@@ -41,6 +41,8 @@ const CreatePage = () => {
     environment: "",
     application: "--select-application--",
     project: "--select-project--",
+    header: false,
+    headerFields: [{name: "", description: ""}],
     endpoints: [
       {
         source: "",
@@ -49,10 +51,7 @@ const CreatePage = () => {
         appUrl: "",
         dnsName: "",
         // API specific fields
-        apiName: "",
-        description: "",
         httpType: "GET",
-        header: false,
         apiUrl: "",
       },
     ],
@@ -133,6 +132,8 @@ const CreatePage = () => {
             application: apiData.application._id || "--select-application--",
             project: apiData.project._id || "--select-project--",
             environment: apiData.environment || "",
+            header: apiData.header || false,
+            headerFields: apiData.headerFields || [{name: "", description: ""}],
             endpoints: apiData.endpoints || [
               {
                 // Fields will be added based on type in useEffect
@@ -199,14 +200,14 @@ const CreatePage = () => {
     setFormData((prev) => ({
       ...prev,
       type: newType,
+      // Reset header fields if type is UI
+      header: newType === "UI" ? false : prev.header,
+      headerFields: newType === "UI" ? [] : prev.headerFields.length > 0 ? prev.headerFields : [{name: "", description: ""}],
       endpoints: prev.endpoints.map((endpoint) => ({
         ...endpoint,
         // Different defaults based on type
         ...(newType === "API" && {
-          apiName: endpoint.apiName || "",
           httpType: endpoint.httpType || "GET",
-          header: endpoint.header || false,
-          description: endpoint.description || "",
           source: endpoint.source || "",
           destination: endpoint.destination || "",
           portNo: endpoint.portNo || "",
@@ -251,10 +252,7 @@ const CreatePage = () => {
     const newEndpoint = {
       // Include the default fields for the current type
       ...(formData.type === "API" && {
-        apiName: "",
         httpType: "GET",
-        header: false,
-        description: "",
         source: "",
         destination: "",
         portNo: "",
@@ -307,6 +305,44 @@ const CreatePage = () => {
     }
   };
 
+  // Add a new header field
+  const addHeaderField = () => {
+    setFormData({
+      ...formData,
+      headerFields: [
+        ...formData.headerFields,
+        { name: "", description: "" }
+      ]
+    });
+  };
+
+  // Handle changes to header fields
+  const handleHeaderFieldChange = (index, field, value) => {
+    const updatedHeaderFields = [...formData.headerFields];
+    updatedHeaderFields[index][field] = value;
+    setFormData({
+      ...formData,
+      headerFields: updatedHeaderFields
+    });
+  };
+
+  // Remove a header field
+  const removeHeaderField = (index) => {
+    // Ensure at least one header field remains
+    if (formData.headerFields.length <= 1) {
+      setFormData({
+        ...formData,
+        headerFields: [{ name: "", description: "" }]
+      });
+      return;
+    }
+    const updatedHeaderFields = formData.headerFields.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      headerFields: updatedHeaderFields
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -319,23 +355,27 @@ const CreatePage = () => {
       for (let index = 0; index < formData.endpoints.length; index++) {
         const endpoint = formData.endpoints[index];
         for (const field of requiredFields) {
-          if (!endpoint[field] && field !== "header") {
-            // header is a boolean, can be false
+          if (!endpoint[field]) {
             throw new Error(
               `Endpoint ${index + 1} is missing required field: ${field}`
             );
           }
         }
-        if(formData.type === "API" && endpoint.header) {
-          if (!endpoint.apiName) {
-            throw new Error(
-              `Endpoint ${index + 1} is missing required field: apiName`
-            );
+      }
+
+      // Validate header fields if header is true and type is API
+      if (formData.type === "API" && formData.header) {
+        if (formData.headerFields.length === 0) {
+          throw new Error("At least one header field is required when header is enabled");
+        }
+        
+        for (let i = 0; i < formData.headerFields.length; i++) {
+          const field = formData.headerFields[i];
+          if (!field.name.trim()) {
+            throw new Error(`Header field ${i + 1} is missing a name`);
           }
-          if (!endpoint.description) {
-            throw new Error(
-              `Endpoint ${index + 1} is missing required field: description`
-            );
+          if (!field.description.trim()) {
+            throw new Error(`Header field ${i + 1} is missing a description`);
           }
         }
       }
@@ -355,18 +395,21 @@ const CreatePage = () => {
       );
       formDataToSend.append("request", formData.request);
       formDataToSend.append("response", formData.response);
+      
+      // Add header and headerFields only if type is API
+      if (formData.type === "API") {
+        formDataToSend.append("header", formData.header);
+        if (formData.header) {
+          formDataToSend.append("headerFields", JSON.stringify(formData.headerFields));
+        }
+      }
 
       // Add only the fields relevant to the selected type for each endpoint
       formData.endpoints.forEach((endpoint, index) => {
-
         if (formData.type === "API") {
           formDataToSend.append(
             `endpoints[${index}][httpType]`,
             endpoint.httpType || "GET"
-          );
-          formDataToSend.append(
-            `endpoints[${index}][header]`,
-            endpoint.header || false
           );
           formDataToSend.append(
             `endpoints[${index}][source]`,
@@ -388,16 +431,6 @@ const CreatePage = () => {
             `endpoints[${index}][dnsName]`,
             endpoint.dnsName || ""
           );
-          if (endpoint.header) {
-            formDataToSend.append(
-              `endpoints[${index}][apiName]`,
-              endpoint.apiName || ""
-            );
-            formDataToSend.append(
-              `endpoints[${index}][description]`,
-              endpoint.description || ""
-            );
-          }
         } else if (formData.type === "UI") {
           formDataToSend.append(
             `endpoints[${index}][appUrl]`,
@@ -468,6 +501,56 @@ const CreatePage = () => {
     }
   };
 
+  // Render header fields section
+  const renderHeaderFieldsSection = () => {
+    if ((formData.type !== "API" && formData.type !== "Integration") || !formData.header) return null;
+    
+    return (
+      <div className={styles.headerFieldsSection}>
+        <h3>Header Fields</h3>
+        {formData.headerFields.length === 0 && (
+          <div className={styles.noFieldsMessage}>
+            No header fields added. Please add at least one header field.
+          </div>
+        )}
+        
+        {formData.headerFields.map((field, index) => (
+          <div key={index} className={styles.headerFieldRow}>
+            <input
+              type="text"
+              placeholder="Field Name"
+              value={field.name}
+              onChange={(e) => handleHeaderFieldChange(index, "name", e.target.value)}
+              required
+            />
+            <input
+              type="text"
+              placeholder="Field Description"
+              value={field.description}
+              onChange={(e) => handleHeaderFieldChange(index, "description", e.target.value)}
+              required
+            />
+            <button 
+              type="button" 
+              onClick={() => removeHeaderField(index)}
+              // className={styles.removeButton}
+            >
+              Remove
+            </button>
+          </div>
+        ))}
+        
+        <button 
+          type="button" 
+          onClick={addHeaderField}
+          className={styles.addButton}
+        >
+          Add Header Field
+        </button>
+      </div>
+    );
+  };
+
   // Render endpoint fields based on selected type
   const renderEndpointFields = (endpoint, index) => {
     switch (formData.type) {
@@ -521,33 +604,6 @@ const CreatePage = () => {
               onChange={(e) => handleChange(e, index, "dnsName")}
               required
             />
-            <div className={styles.checkboxContainer}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={endpoint.header || false}
-                  onChange={(e) => handleChange(e, index, "header")}
-                />
-                Header
-              </label>
-            </div>
-            {endpoint.header && (
-              <>
-                <input
-                  type="text"
-                  placeholder="API Name"
-                  value={endpoint.apiName || ""}
-                  onChange={(e) => handleChange(e, index, "apiName")}
-                  required
-                />
-                <input
-                  placeholder="Description"
-                  value={endpoint.description || ""}
-                  onChange={(e) => handleChange(e, index, "description")}
-                  required
-                />
-              </>
-            )}
           </>
         );
       case "UI":
@@ -677,6 +733,25 @@ const CreatePage = () => {
             ))}
           </select>
         </div>
+
+        {/* Add the header checkbox when type is API or Integration */}
+        {(formData.type === "API" || formData.type === "Integration") && (
+          <div className={styles.headerCheckboxSection}>
+            <div className={styles.checkboxContainer}>
+              <label>
+                <input
+                  type="checkbox"
+                  checked={formData.header}
+                  onChange={(e) => setFormData({ ...formData, header: e.target.checked })}
+                />
+                Enable API Header
+              </label>
+            </div>
+          </div>
+        )}
+
+        {/* Render header fields section if header is enabled */}
+        {renderHeaderFieldsSection()}
 
         {formData.endpoints.map((endpoint, index) => (
           <div
