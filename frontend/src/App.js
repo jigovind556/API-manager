@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import { MyProvider } from "./context/MyContext";
 import ApiChangeHistory from "./pages/ApiChangeHistory";
+import ApiHistorySummary from "./pages/ApiHistorySummary";
 import { ModalProvider } from "./context/ModalContext";
 import CreateApplication from "./pages/CreateApplication";
 import ApplicationsList from "./pages/ApplicationsList";
@@ -39,17 +40,16 @@ function App() {
                     <CreatePage />
                   </Layout>
                 }
-              />
-              <Route
-                path="/api-update-history"
+              />              <Route
+                path="/api-history-summary"
                 element={
                   <Layout>
-                    <ApiChangeHistory />
+                    <ApiHistorySummary />
                   </Layout>
                 }
               />
               <Route
-                path="/api-update-history/:id"
+                path="/api-history/:id"
                 element={
                   <Layout>
                     <ApiChangeHistory />

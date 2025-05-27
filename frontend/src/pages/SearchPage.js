@@ -59,12 +59,34 @@ const SearchPage = () => {
     }));
   };
 
-  const filteredApis = apis.filter((api) => {
-    const nameMatch = api.name?.toLowerCase().includes(searchQueries.name.toLowerCase());
-    const applicationMatch = api.application?.appName?.toLowerCase().includes(searchQueries.application.toLowerCase());
-    const projectMatch = api.project?.name?.toLowerCase().includes(searchQueries.project.toLowerCase());
-    const environmentMatch = api.environment?.toLowerCase().includes(searchQueries.environment.toLowerCase());
+  // const filteredApis = apis.filter((api) => {
+  //   const nameMatch = api.name?.toLowerCase().includes(searchQueries.name.toLowerCase());
+  //   const applicationMatch = api.application?.appName?.toLowerCase().includes(searchQueries.application.toLowerCase());
+  //   const projectMatch = api.project?.name?.toLowerCase().includes(searchQueries.project.toLowerCase());
+  //   const environmentMatch = api.environment?.toLowerCase().includes(searchQueries.environment.toLowerCase());
     
+  //   return nameMatch && applicationMatch && projectMatch && environmentMatch;
+  // });
+
+  const filteredApis = apis.filter((api) => {
+    const { name, application, project, environment } = searchQueries;
+
+    // If all searchQueries are empty, return false to skip filtering (i.e., show no APIs)
+    if (!name && !application && !project && !environment) {
+      return false;
+    }
+
+    const nameMatch = api.name?.toLowerCase().includes(name.toLowerCase());
+    const applicationMatch = api.application?.appName
+      ?.toLowerCase()
+      .includes(application.toLowerCase());
+    const projectMatch = api.project?.name
+      ?.toLowerCase()
+      .includes(project.toLowerCase());
+    const environmentMatch = api.environment
+      ?.toLowerCase()
+      .includes(environment.toLowerCase());
+
     return nameMatch && applicationMatch && projectMatch && environmentMatch;
   });
 

@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
             <a href="/search-api">Search API</a>
           </li>
           <li className={styles.navbox}>
-            <a href="/api-update-history">API update history</a>
+            <a href="/api-history-summary">API update history</a>
           </li>
           <li className={styles.navbox}>
             <a href="/applications-search">Application Search</a>

@@ -369,6 +369,8 @@ const updateApi = asyncHandler(async (req, res) => {
     }
 
     updates.attachment = finalAttachments;
+    // Remove the `existingAttachments` field from updates
+    delete updates.existingAttachments;
 
     // Track actual changes
     const changes = findChanges(oldData, updates);
@@ -447,6 +449,53 @@ const getApiHistory = asyncHandler(async (req, res) => {
   }
 });
 
+const getApiHistorySummary = asyncHandler(async (req, res) => {
+  try {
+    // Get all APIs that have change history records
+    const apisWithHistory = await API_Log.aggregate([
+      {
+        $group: {
+          _id: "$apiId",
+          iterationCount: { $sum: 1 },
+          lastUpdated: { $max: "$updatedAt" }
+        }
+      }
+    ]);
+
+    // Get the IDs of APIs with history
+    const apiIds = apisWithHistory.map(item => item._id);
+
+    // Fetch the API details for these IDs
+    const apiDetails = await API.find({ _id: { $in: apiIds } })
+      .populate("project", "_id name")
+      .populate("application", "_id appName")
+      .lean();
+
+    // Combine the API details with the iteration count
+    const apiSummary = apiDetails.map(api => {
+      const historyInfo = apisWithHistory.find(h => h._id.toString() === api._id.toString());
+      return {
+        ...api,
+        iterationCount: historyInfo ? historyInfo.iterationCount : 0,
+        lastUpdated: historyInfo ? historyInfo.lastUpdated : null
+      };
+    });
+
+    // Sort by last updated date
+    apiSummary.sort((a, b) => new Date(b.lastUpdated) - new Date(a.lastUpdated));
+
+    res
+      .status(200)
+      .json(new ApiResponse(200, apiSummary, "API history summary fetched successfully"));
+  } catch (error) {
+    console.error("Error fetching API history summary:", error);
+    throw new ApiError(
+      error.statusCode || 500,
+      error.message || "Server error"
+    );
+  }
+});
+
 const deleteApi = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const api = await API.findByIdAndDelete(id);
@@ -464,4 +513,5 @@ module.exports = {
   updateApi,
   deleteApi,
   getApiHistory,
+  getApiHistorySummary,
 };
