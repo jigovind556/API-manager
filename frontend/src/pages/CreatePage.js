@@ -32,6 +32,7 @@ const CreatePage = () => {
     { name: "API", val: "API" },
     { name: "UI", val: "UI" },
     { name: "Integration", val: "Integration" },
+    { name: "Other", val: "Other" },
   ];
 
   // Initial form data structure
@@ -81,6 +82,8 @@ const CreatePage = () => {
         ];
       case "UI":
         return [ "appUrl"];
+      case "Other":
+        return [];  // No specific endpoint fields required for "Other" type
       case "Integration":
       default:
         return [
@@ -200,10 +203,10 @@ const CreatePage = () => {
     setFormData((prev) => ({
       ...prev,
       type: newType,
-      // Reset header fields if type is UI
-      header: newType === "UI" ? false : prev.header,
-      headerFields: newType === "UI" ? [] : prev.headerFields.length > 0 ? prev.headerFields : [{name: "", description: ""}],
-      endpoints: prev.endpoints.map((endpoint) => ({
+      // Reset header fields if type is UI or Other
+      header: newType === "UI" || newType === "Other" ? false : prev.header,
+      headerFields: newType === "UI" || newType === "Other" ? [] : prev.headerFields.length > 0 ? prev.headerFields : [{name: "", description: ""}],
+      endpoints: newType === "Other" ? [] : prev.endpoints.map((endpoint) => ({
         ...endpoint,
         // Different defaults based on type
         ...(newType === "API" && {
@@ -248,6 +251,11 @@ const CreatePage = () => {
   };
 
   const addEndpoint = () => {
+    // Don't add endpoints for "Other" type
+    if (formData.type === "Other") {
+      return;
+    }
+    
     // Create a new endpoint with the appropriate fields based on current type
     const newEndpoint = {
       // Include the default fields for the current type
@@ -349,16 +357,23 @@ const CreatePage = () => {
     setLoading(true);
 
     try {
-      // Validate that all required fields are present based on type
-      const requiredFields = getRequiredFields(formData.type);
+      // Special handling for "Other" type
+      if (formData.type === "Other") {
+        if (!formData.name || !formData.apiDescription) {
+          throw new Error("Name and Description are required for 'Other' type");
+        }
+      } else {
+        // Validate that all required fields are present based on type
+        const requiredFields = getRequiredFields(formData.type);
 
-      for (let index = 0; index < formData.endpoints.length; index++) {
-        const endpoint = formData.endpoints[index];
-        for (const field of requiredFields) {
-          if (!endpoint[field]) {
-            throw new Error(
-              `Endpoint ${index + 1} is missing required field: ${field}`
-            );
+        for (let index = 0; index < formData.endpoints.length; index++) {
+          const endpoint = formData.endpoints[index];
+          for (const field of requiredFields) {
+            if (!endpoint[field]) {
+              throw new Error(
+                `Endpoint ${index + 1} is missing required field: ${field}`
+              );
+            }
           }
         }
       }
@@ -385,16 +400,24 @@ const CreatePage = () => {
       // Add non-endpoint data
       formDataToSend.append("name", formData.name);
       formDataToSend.append("type", formData.type);
-      formDataToSend.append("environment", formData.environment);
-      formDataToSend.append("application", formData.application);
-      formDataToSend.append("project", formData.project);
-      formDataToSend.append("apiDescription", formData.apiDescription);
-      formDataToSend.append(
-        "applicationDescription",
-        formData.applicationDescription
-      );
-      formDataToSend.append("request", formData.request);
-      formDataToSend.append("response", formData.response);
+      
+      // For "Other" type, we only need name and description
+      if (formData.type === "Other") {
+        formDataToSend.append("apiDescription", formData.apiDescription);
+        // No need to add other fields for "Other" type
+      } else {
+        // For normal types, add all the standard fields
+        formDataToSend.append("environment", formData.environment);
+        formDataToSend.append("application", formData.application);
+        formDataToSend.append("project", formData.project);
+        formDataToSend.append("apiDescription", formData.apiDescription);
+        formDataToSend.append(
+          "applicationDescription",
+          formData.applicationDescription
+        );
+        formDataToSend.append("request", formData.request);
+        formDataToSend.append("response", formData.response);
+      }
       
       // Add header and headerFields only if type is API
       if (formData.type === "API") {
@@ -405,60 +428,62 @@ const CreatePage = () => {
       }
 
       // Add only the fields relevant to the selected type for each endpoint
-      formData.endpoints.forEach((endpoint, index) => {
-        if (formData.type === "API") {
-          formDataToSend.append(
-            `endpoints[${index}][httpType]`,
-            endpoint.httpType || "GET"
-          );
-          formDataToSend.append(
-            `endpoints[${index}][source]`,
-            endpoint.source || ""
-          );
-          formDataToSend.append(
-            `endpoints[${index}][destination]`,
-            endpoint.destination || ""
-          );
-          formDataToSend.append(
-            `endpoints[${index}][portNo]`,
-            endpoint.portNo || ""
-          );
-          formDataToSend.append(
-            `endpoints[${index}][apiUrl]`,
-            endpoint.apiUrl || ""
-          );
-          formDataToSend.append(
-            `endpoints[${index}][dnsName]`,
-            endpoint.dnsName || ""
-          );
-        } else if (formData.type === "UI") {
-          formDataToSend.append(
-            `endpoints[${index}][appUrl]`,
-            endpoint.appUrl || ""
-          );
-        } else if (formData.type === "Integration") {
-          formDataToSend.append(
-            `endpoints[${index}][source]`,
-            endpoint.source || ""
-          );
-          formDataToSend.append(
-            `endpoints[${index}][destination]`,
-            endpoint.destination || ""
-          );
-          formDataToSend.append(
-            `endpoints[${index}][portNo]`,
-            endpoint.portNo || ""
-          );
-          formDataToSend.append(
-            `endpoints[${index}][appUrl]`,
-            endpoint.appUrl || ""
-          );
-          formDataToSend.append(
-            `endpoints[${index}][dnsName]`,
-            endpoint.dnsName || ""
-          );
-        }
-      });
+      if (formData.type !== "Other") {
+        formData.endpoints.forEach((endpoint, index) => {
+          if (formData.type === "API") {
+            formDataToSend.append(
+              `endpoints[${index}][httpType]`,
+              endpoint.httpType || "GET"
+            );
+            formDataToSend.append(
+              `endpoints[${index}][source]`,
+              endpoint.source || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][destination]`,
+              endpoint.destination || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][portNo]`,
+              endpoint.portNo || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][apiUrl]`,
+              endpoint.apiUrl || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][dnsName]`,
+              endpoint.dnsName || ""
+            );
+          } else if (formData.type === "UI") {
+            formDataToSend.append(
+              `endpoints[${index}][appUrl]`,
+              endpoint.appUrl || ""
+            );
+          } else if (formData.type === "Integration") {
+            formDataToSend.append(
+              `endpoints[${index}][source]`,
+              endpoint.source || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][destination]`,
+              endpoint.destination || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][portNo]`,
+              endpoint.portNo || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][appUrl]`,
+              endpoint.appUrl || ""
+            );
+            formDataToSend.append(
+              `endpoints[${index}][dnsName]`,
+              endpoint.dnsName || ""
+            );
+          }
+        });
+      }
 
       // If in edit mode, include existing attachments
       if (isEditMode) {
@@ -692,140 +717,158 @@ const CreatePage = () => {
               </option>
             ))}
           </select>
-          <select
-            name="environment"
-            className={styles.select}
-            value={formData.environment}
-            onChange={handleSelectChange}
-            required
-          >
-            <option value="">Select Environment</option>
-            {envOptions.map((env) => (
-              <option key={env.val} value={env.val}>
-                {env.name}
-              </option>
-            ))}
-          </select>
-          <select
-            name="project"
-            value={formData.project}
-            onChange={handleSelectChange}
-            required
-            className={styles.select}
-          >
-            {projectOptions.map((option) => (
-              <option key={option._id} value={option._id}>
-                {option.name}
-              </option>
-            ))}
-          </select>
-          <select
-            name="application"
-            value={formData.application}
-            onChange={handleSelectChange}
-            required
-            className={styles.select}
-          >
-            {filteredApplications.map((option) => (
-              <option key={option._id} value={option._id}>
-                {option.appName}
-              </option>
-            ))}
-          </select>
+          {formData.type !== "Other" && (
+            <>
+              <select
+                name="environment"
+                className={styles.select}
+                value={formData.environment}
+                onChange={handleSelectChange}
+                required={formData.type !== "Other"}
+              >
+                <option value="">Select Environment</option>
+                {envOptions.map((env) => (
+                  <option key={env.val} value={env.val}>
+                    {env.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                name="project"
+                value={formData.project}
+                onChange={handleSelectChange}
+                required={formData.type !== "Other"}
+                className={styles.select}
+              >
+                {projectOptions.map((option) => (
+                  <option key={option._id} value={option._id}>
+                    {option.name}
+                  </option>
+                ))}
+              </select>
+              <select
+                name="application"
+                value={formData.application}
+                onChange={handleSelectChange}
+                required={formData.type !== "Other"}
+                className={styles.select}
+              >
+                {filteredApplications.map((option) => (
+                  <option key={option._id} value={option._id}>
+                    {option.appName}
+                  </option>
+                ))}
+              </select>
+            </>
+          )}
         </div>
 
-        {/* Add the header checkbox when type is API or Integration */}
-        {(formData.type === "API" || formData.type === "Integration") && (
-          <div className={styles.headerCheckboxSection}>
-            <div className={styles.checkboxContainer}>
-              <label>
-                <input
-                  type="checkbox"
-                  checked={formData.header}
-                  onChange={(e) => setFormData({ ...formData, header: e.target.checked })}
-                />
-                Enable API Header
-              </label>
-            </div>
+        {formData.type === "Other" ? (
+          <div className={styles.descRow}>
+            <textarea
+              name="apiDescription"
+              placeholder="Description"
+              value={formData.apiDescription}
+              onChange={(e) =>
+                setFormData({ ...formData, apiDescription: e.target.value })
+              }
+              required
+              style={{ width: '100%', height: '150px' }}
+            ></textarea>
           </div>
+        ) : (
+          <>
+            {(formData.type === "API" || formData.type === "Integration") && (
+              <div className={styles.headerCheckboxSection}>
+                <div className={styles.checkboxContainer}>
+                  <label>
+                    <input
+                      type="checkbox"
+                      checked={formData.header}
+                      onChange={(e) => setFormData({ ...formData, header: e.target.checked })}
+                    />
+                    Enable API Header
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {renderHeaderFieldsSection()}
+
+            {formData.endpoints.map((endpoint, index) => (
+              <div
+                key={index}
+                className={`${styles.endpointRow} ${
+                  formData.type === "API"
+                    ? styles.apiEndpointRow
+                    : formData.type === "UI"
+                    ? styles.uiEndpointRow
+                    : styles.integrationEndpointRow
+                }`}
+              >
+                {renderEndpointFields(endpoint, index)}
+                <button type="button" onClick={() => removeEndpoint(index)}>
+                  Remove
+                </button>
+              </div>
+            ))}
+
+            <button
+              type="button"
+              onClick={addEndpoint}
+              className={styles.addButton}
+            >
+              Add Endpoint
+            </button>
+
+            <div className={styles.descRow}>
+              <textarea
+                name="apiDescription"
+                placeholder="API Description (Optional)"
+                value={formData.apiDescription}
+                onChange={(e) =>
+                  setFormData({ ...formData, apiDescription: e.target.value })
+                }
+              ></textarea>
+
+              <textarea
+                name="applicationDescription"
+                placeholder="Application Description (Optional)"
+                value={formData.applicationDescription}
+                onChange={(e) =>
+                  setFormData({
+                    ...formData,
+                    applicationDescription: e.target.value,
+                  })
+                }
+              ></textarea>
+            </div>
+
+            <div className={styles.descRow}>
+              <textarea
+                name="request"
+                placeholder="Request Data"
+                value={formData.request}
+                onChange={(e) =>
+                  setFormData({ ...formData, request: e.target.value })
+                }
+                required
+              ></textarea>
+
+              <textarea
+                name="response"
+                placeholder="Response Data"
+                value={formData.response}
+                onChange={(e) =>
+                  setFormData({ ...formData, response: e.target.value })
+                }
+                required
+              ></textarea>
+            </div>
+          </>
         )}
 
-        {/* Render header fields section if header is enabled */}
-        {renderHeaderFieldsSection()}
-
-        {formData.endpoints.map((endpoint, index) => (
-          <div
-            key={index}
-            className={`${styles.endpointRow} ${
-              formData.type === "API"
-                ? styles.apiEndpointRow
-                : formData.type === "UI"
-                ? styles.uiEndpointRow
-                : styles.integrationEndpointRow
-            }`}
-          >
-            {renderEndpointFields(endpoint, index)}
-            <button type="button" onClick={() => removeEndpoint(index)}>
-              Remove
-            </button>
-          </div>
-        ))}
-
-        <button
-          type="button"
-          onClick={addEndpoint}
-          className={styles.addButton}
-        >
-          Add Endpoint
-        </button>
-
-        <div className={styles.descRow}>
-          <textarea
-            name="apiDescription"
-            placeholder="API Description (Optional)"
-            value={formData.apiDescription}
-            onChange={(e) =>
-              setFormData({ ...formData, apiDescription: e.target.value })
-            }
-          ></textarea>
-
-          <textarea
-            name="applicationDescription"
-            placeholder="Application Description (Optional)"
-            value={formData.applicationDescription}
-            onChange={(e) =>
-              setFormData({
-                ...formData,
-                applicationDescription: e.target.value,
-              })
-            }
-          ></textarea>
-        </div>
-
-        <div className={styles.descRow}>
-          <textarea
-            name="request"
-            placeholder="Request Data"
-            value={formData.request}
-            onChange={(e) =>
-              setFormData({ ...formData, request: e.target.value })
-            }
-            required
-          ></textarea>
-
-          <textarea
-            name="response"
-            placeholder="Response Data"
-            value={formData.response}
-            onChange={(e) =>
-              setFormData({ ...formData, response: e.target.value })
-            }
-            required
-          ></textarea>
-        </div>
-
-        {/* Show existing attachments in edit mode */}
-        {isEditMode && formData.existingAttachments.length > 0 && (
+        {isEditMode && formData.existingAttachments.length > 0 && formData.type !== "Other" && (
           <div className={styles.attachmentsSection}>
             <h3>Existing Attachments</h3>
             <div className={styles.attachmentsGrid}>

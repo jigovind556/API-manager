@@ -43,12 +43,14 @@ const apiSchema = new mongoose.Schema(
     },
     environment: {
       type: String,
-      required: true,
+      required: function() {
+        return this.type !== "Other";
+      },
       trim: true,
     },
     type: {
       type: String,
-      enum: ["API", "UI", "Integration"],
+      enum: ["API", "UI", "Integration", "Other"],
       required: true,
     },
     // Added new fields for header data at API level
@@ -71,16 +73,28 @@ const apiSchema = new mongoose.Schema(
     application: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Application",
-      required: true,
+      required: function() {
+        return this.type !== "Other";
+      }
     },
     project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "AppOption",
-      required: true,
+      required: function() {
+        return this.type !== "Other";
+      }
     },
     endpoints: {
       type: [endpointSchema],
-      required: true,
+      required: function() {
+        return this.type !== "Other";
+      },
+      validate: {
+        validator: function(v) {
+          return this.type === "Other" || (Array.isArray(v) && v.length > 0);
+        },
+        message: props => "At least one endpoint is required if type is not 'Other'"
+      }
     },
     apiDescription: {
       type: String,
@@ -92,11 +106,15 @@ const apiSchema = new mongoose.Schema(
     },
     request: {
       type: Object,
-      required: true,
+      required: function() {
+        return this.type !== "Other";
+      }
     },
     response: {
       type: Object,
-      required: true,
+      required: function() {
+        return this.type !== "Other";
+      }
     },
     attachment: {
       type: [String],
@@ -137,6 +155,9 @@ apiSchema.pre("validate", function (next) {
     requiredFields = ["appUrl"];
   } else if (this.type === "Integration") {
     requiredFields = ["source", "destination", "portNo", "appUrl", "dnsName"];
+  } else if (this.type === "Other") {
+    // No specific endpoint field requirements for "Other" type
+    requiredFields = [];
   }
 
   // Header validation - if header is true, validate headerFields for API and Integration types
@@ -174,6 +195,11 @@ apiSchema.pre("validate", function (next) {
         );
       }
     }
+  }
+
+  // For "Other" type, we don't need to validate endpoints
+  if (this.type === "Other") {
+    return next();
   }
 
   const missing = [];

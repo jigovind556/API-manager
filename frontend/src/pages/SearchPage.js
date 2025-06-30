@@ -75,20 +75,24 @@ const SearchPage = () => {
     if (!name && !application && !project && !environment) {
       return false;
     }
-
     const nameMatch = api.name?.toLowerCase().includes(name.toLowerCase());
+    if(api.type==="Other"){
+      return nameMatch; // If type is "Other", only filter by name
+    }
     const applicationMatch = api.application?.appName
-      ?.toLowerCase()
-      .includes(application.toLowerCase());
+    ?.toLowerCase()
+    .includes(application.toLowerCase());
     const projectMatch = api.project?.name
-      ?.toLowerCase()
-      .includes(project.toLowerCase());
+    ?.toLowerCase()
+    .includes(project.toLowerCase());
     const environmentMatch = api.environment
-      ?.toLowerCase()
-      .includes(environment.toLowerCase());
-
+    ?.toLowerCase()
+    .includes(environment.toLowerCase());
+    
+    console.log("api name :", api.name," ,name:",name," ,nameMatch:", nameMatch," ,final :", nameMatch && applicationMatch && projectMatch && environmentMatch);
     return nameMatch && applicationMatch && projectMatch && environmentMatch;
   });
+  console.log(filteredApis);
 
   return (
     <div

@@ -24,12 +24,17 @@ const createApi = asyncHandler(async (req, res) => {
 
   const endpoints = req.body.endpoints;
 
-  if (endpoints.length === 0) {
+  if (type !== "Other" && endpoints.length === 0) {
     throw new ApiError(400, "At least one endpoint must be provided");
   }
 
   // Check for missing fields
-  if (!name || !type || !environment || !application || !project || !request || !response) {
+  if (!name || !type) {
+    throw new ApiError(400, "Name and Type are required fields");
+  }
+
+  // For types other than "Other", validate additional required fields
+  if (type !== "Other" && (!environment || !application || !project || !request || !response)) {
     throw new ApiError(400, "All required fields must be provided");
   }
 
@@ -48,6 +53,9 @@ const createApi = asyncHandler(async (req, res) => {
       break;
     case "UI":
       requiredFields = ["appUrl"];
+      break;
+    case "Other":
+      requiredFields = []; // No specific endpoint fields required
       break;
     case "Integration":
     default:
@@ -78,10 +86,12 @@ const createApi = asyncHandler(async (req, res) => {
     }
   }
 
-  for (const endpoint of endpoints) {
-    for (const field of requiredFields) {
-      if (endpoint[field] === undefined || endpoint[field] === null || endpoint[field] === "") {
-        throw new ApiError(400, `Missing field '${field}' in one of the endpoints`);
+  if (type !== "Other") {  // Skip endpoint validation for "Other" type
+    for (const endpoint of endpoints) {
+      for (const field of requiredFields) {
+        if (endpoint[field] === undefined || endpoint[field] === null || endpoint[field] === "") {
+          throw new ApiError(400, `Missing field '${field}' in one of the endpoints`);
+        }
       }
     }
   }
@@ -117,22 +127,31 @@ const createApi = asyncHandler(async (req, res) => {
     }
   }
   
-  const api = await API.create({
+  // Create API data object based on type
+  const apiData = {
     name,
     type,
-    environment,
-    application,
-    project,
-    endpoints,
     apiDescription,
-    applicationDescription,
-    header: isHeaderEnabled, 
-    headerFields: isHeaderEnabled ? parsedHeaderFields : [],
-    request: JSON.parse(request),
-    response: JSON.parse(response),
     attachment,
-    createdBy,
-  });
+    createdBy
+  };
+
+  // Only add fields that are relevant to the type
+  if (type !== "Other") {
+    Object.assign(apiData, {
+      environment,
+      application,
+      project,
+      endpoints,
+      applicationDescription,
+      header: isHeaderEnabled,
+      headerFields: isHeaderEnabled ? parsedHeaderFields : [],
+      request: JSON.parse(request),
+      response: JSON.parse(response)
+    });
+  }
+
+  const api = await API.create(apiData);
 
   res.status(201).json(new ApiResponse(201, api, "API created successfully"));
 });
@@ -155,9 +174,10 @@ const getAllApis = asyncHandler(async (req, res) => {
 const getApiById = asyncHandler(async (req, res) => {
   const { id } = req.params;
   const api = await API.findById(id)
-  .populate("application", "_id appName")
-  .populate("project", "_id name")
-  .populate("createdBy", "_id name username");
+    .populate("application", "_id appName")
+    .populate("project", "_id name")
+    .populate("createdBy", "_id name username")
+    .populate("headerFields");
   if (!api) {
     throw new ApiError(404, "API not found");
   }
@@ -371,6 +391,20 @@ const updateApi = asyncHandler(async (req, res) => {
     updates.attachment = finalAttachments;
     // Remove the `existingAttachments` field from updates
     delete updates.existingAttachments;
+
+    // Handle "Other" type specifically
+    if (updates.type === "Other") {
+      // Remove fields that shouldn't be sent for "Other" type
+      delete updates.environment;
+      delete updates.application;
+      delete updates.project;
+      delete updates.endpoints;
+      delete updates.applicationDescription;
+      delete updates.request;
+      delete updates.response;
+      delete updates.header;
+      delete updates.headerFields;
+    }
 
     // Track actual changes
     const changes = findChanges(oldData, updates);
