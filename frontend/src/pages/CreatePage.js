@@ -401,16 +401,14 @@ const CreatePage = () => {
       formDataToSend.append("name", formData.name);
       formDataToSend.append("type", formData.type);
       
-      // For "Other" type, we only need name and description
-      if (formData.type === "Other") {
-        formDataToSend.append("apiDescription", formData.apiDescription);
-        // No need to add other fields for "Other" type
-      } else {
-        // For normal types, add all the standard fields
-        formDataToSend.append("environment", formData.environment);
-        formDataToSend.append("application", formData.application);
-        formDataToSend.append("project", formData.project);
-        formDataToSend.append("apiDescription", formData.apiDescription);
+      // For all types, add environment, project and application
+      formDataToSend.append("environment", formData.environment);
+      formDataToSend.append("application", formData.application);
+      formDataToSend.append("project", formData.project);
+      formDataToSend.append("apiDescription", formData.apiDescription);
+      
+      // For "Other" type, we don't need additional fields
+      if (formData.type !== "Other") {
         formDataToSend.append(
           "applicationDescription",
           formData.applicationDescription
@@ -717,50 +715,46 @@ const CreatePage = () => {
               </option>
             ))}
           </select>
-          {formData.type !== "Other" && (
-            <>
-              <select
-                name="environment"
-                className={styles.select}
-                value={formData.environment}
-                onChange={handleSelectChange}
-                required={formData.type !== "Other"}
-              >
-                <option value="">Select Environment</option>
-                {envOptions.map((env) => (
-                  <option key={env.val} value={env.val}>
-                    {env.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="project"
-                value={formData.project}
-                onChange={handleSelectChange}
-                required={formData.type !== "Other"}
-                className={styles.select}
-              >
-                {projectOptions.map((option) => (
-                  <option key={option._id} value={option._id}>
-                    {option.name}
-                  </option>
-                ))}
-              </select>
-              <select
-                name="application"
-                value={formData.application}
-                onChange={handleSelectChange}
-                required={formData.type !== "Other"}
-                className={styles.select}
-              >
-                {filteredApplications.map((option) => (
-                  <option key={option._id} value={option._id}>
-                    {option.appName}
-                  </option>
-                ))}
-              </select>
-            </>
-          )}
+          <select
+            name="environment"
+            className={styles.select}
+            value={formData.environment}
+            onChange={handleSelectChange}
+            required
+          >
+            <option value="">Select Environment</option>
+            {envOptions.map((env) => (
+              <option key={env.val} value={env.val}>
+                {env.name}
+              </option>
+            ))}
+          </select>
+          <select
+            name="project"
+            value={formData.project}
+            onChange={handleSelectChange}
+            required
+            className={styles.select}
+          >
+            {projectOptions.map((option) => (
+              <option key={option._id} value={option._id}>
+                {option.name}
+              </option>
+            ))}
+          </select>
+          <select
+            name="application"
+            value={formData.application}
+            onChange={handleSelectChange}
+            required
+            className={styles.select}
+          >
+            {filteredApplications.map((option) => (
+              <option key={option._id} value={option._id}>
+                {option.appName}
+              </option>
+            ))}
+          </select>
         </div>
 
         {formData.type === "Other" ? (

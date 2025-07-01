@@ -29,12 +29,12 @@ const createApi = asyncHandler(async (req, res) => {
   }
 
   // Check for missing fields
-  if (!name || !type) {
-    throw new ApiError(400, "Name and Type are required fields");
+  if (!name || !type || !environment || !application || !project) {
+    throw new ApiError(400, "Name, Type, Environment, Application and Project are required fields");
   }
 
   // For types other than "Other", validate additional required fields
-  if (type !== "Other" && (!environment || !application || !project || !request || !response)) {
+  if (type !== "Other" && (!request || !response)) {
     throw new ApiError(400, "All required fields must be provided");
   }
 
@@ -131,17 +131,17 @@ const createApi = asyncHandler(async (req, res) => {
   const apiData = {
     name,
     type,
+    environment,
+    application,
+    project,
     apiDescription,
     attachment,
     createdBy
   };
 
-  // Only add fields that are relevant to the type
+  // Add type-specific fields
   if (type !== "Other") {
     Object.assign(apiData, {
-      environment,
-      application,
-      project,
       endpoints,
       applicationDescription,
       header: isHeaderEnabled,
@@ -395,9 +395,6 @@ const updateApi = asyncHandler(async (req, res) => {
     // Handle "Other" type specifically
     if (updates.type === "Other") {
       // Remove fields that shouldn't be sent for "Other" type
-      delete updates.environment;
-      delete updates.application;
-      delete updates.project;
       delete updates.endpoints;
       delete updates.applicationDescription;
       delete updates.request;

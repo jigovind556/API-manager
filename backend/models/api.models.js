@@ -43,9 +43,7 @@ const apiSchema = new mongoose.Schema(
     },
     environment: {
       type: String,
-      required: function() {
-        return this.type !== "Other";
-      },
+      required: true,
       trim: true,
     },
     type: {
@@ -73,16 +71,12 @@ const apiSchema = new mongoose.Schema(
     application: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Application",
-      required: function() {
-        return this.type !== "Other";
-      }
+      required: true
     },
     project: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "AppOption",
-      required: function() {
-        return this.type !== "Other";
-      }
+      required: true
     },
     endpoints: {
       type: [endpointSchema],
